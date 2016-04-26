@@ -1,0 +1,43 @@
+﻿
+19-04-2016 21:15:40:583 - I: 	Registered player Player 1
+19-04-2016 21:15:40:584 - I: 	Registered player Player 2
+19-04-2016 21:15:40:584 - I: 	Registered player Player 3
+19-04-2016 21:15:40:584 - I: 	Registered player Player 4
+19-04-2016 21:15:40:587 - I: 	Trying seed 302006051...
+19-04-2016 21:15:40:613 - E: 	Map not suitable with seed, trying a new one.Domain.Exceptions.MapUnsuitableException: Generated map was not suitable for the chosen power-up generation strategy.
+   at GameEngine.MapGenerator.GameMapGenerator`1.GeneratePowerUps(GameMap gameMap, Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\MapGenerator\GameMapGenerator.cs:line 294
+   at GameEngine.MapGenerator.GameMapGenerator`1.GenerateGameMap(Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\MapGenerator\GameMapGenerator.cs:line 75
+   at GameEngine.Engine.BombermanEngine.PrepareGame(List`1 players, Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\Engine\BombermanEngine.cs:line 54
+
+19-04-2016 21:15:40:617 - I: 	Trying seed 267349671...
+19-04-2016 21:15:40:618 - E: 	Map not suitable with seed, trying a new one.Domain.Exceptions.MapUnsuitableException: Generated map was not suitable for the chosen power-up generation strategy.
+   at GameEngine.MapGenerator.GameMapGenerator`1.GeneratePowerUps(GameMap gameMap, Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\MapGenerator\GameMapGenerator.cs:line 294
+   at GameEngine.MapGenerator.GameMapGenerator`1.GenerateGameMap(Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\MapGenerator\GameMapGenerator.cs:line 75
+   at GameEngine.Engine.BombermanEngine.PrepareGame(List`1 players, Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\Engine\BombermanEngine.cs:line 54
+
+19-04-2016 21:15:40:618 - I: 	Trying seed 708957844...
+19-04-2016 21:15:40:619 - E: 	Map not suitable with seed, trying a new one.Domain.Exceptions.MapUnsuitableException: Generated map was not suitable for the chosen power-up generation strategy.
+   at GameEngine.MapGenerator.GameMapGenerator`1.GeneratePowerUps(GameMap gameMap, Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\MapGenerator\GameMapGenerator.cs:line 294
+   at GameEngine.MapGenerator.GameMapGenerator`1.GenerateGameMap(Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\MapGenerator\GameMapGenerator.cs:line 75
+   at GameEngine.Engine.BombermanEngine.PrepareGame(List`1 players, Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\Engine\BombermanEngine.cs:line 54
+
+19-04-2016 21:15:40:619 - I: 	Trying seed 1662714669...
+19-04-2016 21:15:40:620 - E: 	Map not suitable with seed, trying a new one.Domain.Exceptions.MapUnsuitableException: Generated map was not suitable for the chosen power-up generation strategy.
+   at GameEngine.MapGenerator.GameMapGenerator`1.GeneratePowerUps(GameMap gameMap, Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\MapGenerator\GameMapGenerator.cs:line 294
+   at GameEngine.MapGenerator.GameMapGenerator`1.GenerateGameMap(Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\MapGenerator\GameMapGenerator.cs:line 75
+   at GameEngine.Engine.BombermanEngine.PrepareGame(List`1 players, Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\Engine\BombermanEngine.cs:line 54
+
+19-04-2016 21:15:40:620 - I: 	Trying seed 1064951578...
+19-04-2016 21:15:40:621 - E: 	Map not suitable with seed, trying a new one.Domain.Exceptions.MapUnsuitableException: Generated map was not suitable for the chosen power-up generation strategy.
+   at GameEngine.MapGenerator.GameMapGenerator`1.GeneratePowerUps(GameMap gameMap, Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\MapGenerator\GameMapGenerator.cs:line 294
+   at GameEngine.MapGenerator.GameMapGenerator`1.GenerateGameMap(Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\MapGenerator\GameMapGenerator.cs:line 75
+   at GameEngine.Engine.BombermanEngine.PrepareGame(List`1 players, Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\Engine\BombermanEngine.cs:line 54
+
+19-04-2016 21:15:40:621 - I: 	Trying seed 297969896...
+19-04-2016 21:15:40:622 - E: 	Map not suitable with seed, trying a new one.Domain.Exceptions.MapUnsuitableException: Generated map was not suitable for the chosen power-up generation strategy.
+   at GameEngine.MapGenerator.GameMapGenerator`1.GeneratePowerUps(GameMap gameMap, Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\MapGenerator\GameMapGenerator.cs:line 294
+   at GameEngine.MapGenerator.GameMapGenerator`1.GenerateGameMap(Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\MapGenerator\GameMapGenerator.cs:line 75
+   at GameEngine.Engine.BombermanEngine.PrepareGame(List`1 players, Int32 seed) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\Engine\BombermanEngine.cs:line 54
+
+19-04-2016 21:15:40:622 - I: 	Trying seed 1100979728...
+19-04-2016 21:15:40:667 - I: 		OK!

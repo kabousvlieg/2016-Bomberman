@@ -1,0 +1,14 @@
+﻿
+19-04-2016 21:17:10:285 - D: 	Executing bot with following commands ../Reference Bot\Reference\bin\Debug\Reference.exe C "C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\2099624094\32\C"
+19-04-2016 21:17:10:285 - I: 	Executing process ../Reference Bot\Reference\bin\Debug\Reference.exe C "C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\2099624094\32\C"
+19-04-2016 21:17:10:294 - I: 	Bot has 4000ms to run before it will be forcefully killed
+19-04-2016 21:17:10:560 - I: 	Output from bot: System.NullReferenceException: Object reference not set to an instance of an object.
+19-04-2016 21:17:10:560 - I: 	Output from bot:    at Reference.Strategies.AStar.PathFinder.GetPath(Node startNode, Node endNode) in C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Reference Bot\Reference\Strategies\AStar\PathFinder.cs:line 83
+19-04-2016 21:17:10:560 - I: 	Output from bot:    at Reference.Strategies.AStar.PathFinder.FindBestPath(Node startNode, Node endNode) in C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Reference Bot\Reference\Strategies\AStar\PathFinder.cs:line 72
+19-04-2016 21:17:10:560 - I: 	Output from bot:    at Reference.Strategies.AStar.AStarStrategy.FindBestPath(NodeMap nodeMap) in C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Reference Bot\Reference\Strategies\AStar\AStarStrategy.cs:line 126
+19-04-2016 21:17:10:560 - I: 	Output from bot:    at Reference.Strategies.AStar.AStarStrategy.FindBestCommand(NodeMap nodeMap) in C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Reference Bot\Reference\Strategies\AStar\AStarStrategy.cs:line 30
+19-04-2016 21:17:10:560 - I: 	Output from bot:    at Reference.Strategies.AStar.AStarStrategy.ExecuteStrategy(GameMap gameMap, Char playerKey) in C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Reference Bot\Reference\Strategies\AStar\AStarStrategy.cs:line 25
+19-04-2016 21:17:10:562 - E: 	Output from bot: 
+19-04-2016 21:17:10:562 - I: 	Output from bot:    at Reference.Program.Main(String[] args) in C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Reference Bot\Reference\Program.cs:line 40
+19-04-2016 21:17:10:562 - I: 	Output from bot: 
+19-04-2016 21:17:10:563 - I: 	Your bots total execution time was 00:00:00.2783702

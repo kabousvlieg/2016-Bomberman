@@ -1,0 +1,31 @@
+﻿
+19-04-2016 21:18:40:900 - D: 	Executing bot with following commands ../Reference Bot\Reference\bin\Debug\Reference.exe D "C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\2099624094\161\D"
+19-04-2016 21:18:40:900 - I: 	Executing process ../Reference Bot\Reference\bin\Debug\Reference.exe D "C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\2099624094\161\D"
+19-04-2016 21:18:40:909 - I: 	Bot has 4000ms to run before it will be forcefully killed
+19-04-2016 21:18:41:112 - I: 	Output from bot: Targeting Previous Node Location(2,17)
+19-04-2016 21:18:41:222 - I: 	Output from bot: *********************
+19-04-2016 21:18:41:222 - I: 	Output from bot: *   ### # # # ##    *
+19-04-2016 21:18:41:222 - I: 	Output from bot: * * *#* *#* * *#* * *
+19-04-2016 21:18:41:222 - I: 	Output from bot: *                   *
+19-04-2016 21:18:41:222 - I: 	Output from bot: *#* * * * * * * * *#*
+19-04-2016 21:18:41:222 - I: 	Output from bot: *#     .....       #*
+19-04-2016 21:18:41:223 - I: 	Output from bot: * * * *.*#*.* * * * *
+19-04-2016 21:18:41:223 - I: 	Output from bot: *      ... .     ...*
+19-04-2016 21:18:41:223 - I: 	Output from bot: * * * *#*.*.* * *.*.*
+19-04-2016 21:18:41:223 - I: 	Output from bot: * #    ... . ..... .*
+19-04-2016 21:18:41:223 - I: 	Output from bot: *#* * *.*  .*.* * *.*
+19-04-2016 21:18:41:223 - I: 	Output from bot: *  .....   ...     .*
+19-04-2016 21:18:41:223 - I: 	Output from bot: * *.* * * * * * * *.*
+19-04-2016 21:18:41:223 - I: 	Output from bot: *  D               .*
+19-04-2016 21:18:41:223 - I: 	Output from bot: * * * * * * * * * *.*
+19-04-2016 21:18:41:223 - I: 	Output from bot: *# A               .*
+19-04-2016 21:18:41:223 - I: 	Output from bot: *.* * * * * * * * *.*
+19-04-2016 21:18:41:223 - I: 	Output from bot: *.             .....*
+19-04-2016 21:18:41:223 - I: 	Output from bot: *.* * * * * * *.* * *
+19-04-2016 21:18:41:223 - I: 	Output from bot: *...............    *
+19-04-2016 21:18:41:223 - I: 	Output from bot: *********************
+19-04-2016 21:18:41:224 - I: 	Output from bot: Executing place bomb command
+19-04-2016 21:18:41:224 - I: 	Output from bot: Sending Back command PlaceBomb
+19-04-2016 21:18:41:226 - I: 	Output from bot: 
+19-04-2016 21:18:41:226 - E: 	Output from bot: 
+19-04-2016 21:18:41:228 - I: 	Your bots total execution time was 00:00:00.3280040

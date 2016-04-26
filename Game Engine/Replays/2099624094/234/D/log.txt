@@ -1,0 +1,32 @@
+﻿
+19-04-2016 21:19:23:842 - I: 	Player Command MovementCommand(Down) failed because Cannot move to Location(X:2,Y:17), PlayerEntity(X:2, Y:17, Key:A) already occupies this space
+19-04-2016 21:19:23:947 - D: 	Executing bot with following commands ../Reference Bot\Reference\bin\Debug\Reference.exe D "C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\2099624094\234\D"
+19-04-2016 21:19:23:947 - I: 	Executing process ../Reference Bot\Reference\bin\Debug\Reference.exe D "C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\2099624094\234\D"
+19-04-2016 21:19:23:956 - I: 	Bot has 4000ms to run before it will be forcefully killed
+19-04-2016 21:19:24:159 - I: 	Output from bot: Targeting Previous Node Location(2,17)
+19-04-2016 21:19:24:161 - I: 	Output from bot: *********************
+19-04-2016 21:19:24:161 - I: 	Output from bot: *   ### # # # ##    *
+19-04-2016 21:19:24:161 - I: 	Output from bot: * * * * *#* * *#* * *
+19-04-2016 21:19:24:161 - I: 	Output from bot: *                   *
+19-04-2016 21:19:24:161 - I: 	Output from bot: *#* * * * * * * * *#*
+19-04-2016 21:19:24:161 - I: 	Output from bot: *#                 #*
+19-04-2016 21:19:24:161 - I: 	Output from bot: * * * *#*#* * * * * *
+19-04-2016 21:19:24:161 - I: 	Output from bot: *       #           *
+19-04-2016 21:19:24:162 - I: 	Output from bot: * * * *#*#* * * *#* *
+19-04-2016 21:19:24:162 - I: 	Output from bot: *        # #        *
+19-04-2016 21:19:24:162 - I: 	Output from bot: * * * * *   * * * *#*
+19-04-2016 21:19:24:162 - I: 	Output from bot: *           #       *
+19-04-2016 21:19:24:162 - I: 	Output from bot: * * * * * * * * * * *
+19-04-2016 21:19:24:162 - I: 	Output from bot: *                   *
+19-04-2016 21:19:24:162 - I: 	Output from bot: * * * * * * * * * * *
+19-04-2016 21:19:24:162 - I: 	Output from bot: *D                  *
+19-04-2016 21:19:24:162 - I: 	Output from bot: *.* * * * * * * * *#*
+19-04-2016 21:19:24:162 - I: 	Output from bot: *                   *
+19-04-2016 21:19:24:162 - I: 	Output from bot: * * * * * * * *#* * *
+19-04-2016 21:19:24:162 - I: 	Output from bot: *       # # # ##    *
+19-04-2016 21:19:24:163 - I: 	Output from bot: *********************
+19-04-2016 21:19:24:163 - I: 	Output from bot: Executing move command
+19-04-2016 21:19:24:163 - I: 	Output from bot: Sending Back command MoveDown
+19-04-2016 21:19:24:166 - E: 	Output from bot: 
+19-04-2016 21:19:24:166 - I: 	Output from bot: 
+19-04-2016 21:19:24:167 - I: 	Your bots total execution time was 00:00:00.2206717

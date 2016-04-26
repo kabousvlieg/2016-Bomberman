@@ -1,0 +1,17 @@
+﻿
+19-04-2016 21:19:24:279 - I: 	Added Command GameEngine.Commands.PlayerCommands.TriggerBombCommand for Player PlayerEntity(X:2, Y:17, Key:A)
+19-04-2016 21:19:24:506 - I: 	Added Command MovementCommand(Down) for Player PlayerEntity(X:2, Y:16, Key:D)
+19-04-2016 21:19:24:506 - D: 	Beginning round processing
+19-04-2016 21:19:24:506 - D: 	Removing Bomb Explosions from map
+19-04-2016 21:19:24:506 - D: 	Decreasing Bomb Timers
+19-04-2016 21:19:24:506 - D: 	Detonating Bombs
+19-04-2016 21:19:24:506 - I: 	Detonating Bomb BombEntity(X:2, Y:17, Radius:32, Timer:0, Owner:A)
+19-04-2016 21:19:24:506 - D: 	Processing Player Commands
+19-04-2016 21:19:24:506 - I: 	Player PlayerEntity(X:2, Y:17, Key:A) has been killed, and the command GameEngine.Commands.PlayerCommands.TriggerBombCommand will be ignored
+19-04-2016 21:19:24:506 - I: 	Player PlayerEntity(X:2, Y:16, Key:D) has been killed, and the command MovementCommand(Down) will be ignored
+19-04-2016 21:19:24:506 - D: 	Applying player power ups
+19-04-2016 21:19:24:506 - D: 	Destroying marked entities
+19-04-2016 21:19:24:506 - D: 	Destroyed Entity DestructibleWallEntity(X:2, Y:6)
+19-04-2016 21:19:24:506 - D: 	Destroyed Entity PlayerEntity(X:2, Y:16, Key:D)
+19-04-2016 21:19:24:506 - D: 	Destroyed Entity PlayerEntity(X:2, Y:17, Key:A)
+19-04-2016 21:19:24:507 - D: 	Round processing complete

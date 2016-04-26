@@ -1,0 +1,36 @@
+﻿
+19-04-2016 21:19:13:816 - D: 	Executing bot with following commands ../Reference Bot\Reference\bin\Debug\Reference.exe A "C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\2099624094\216\A"
+19-04-2016 21:19:13:816 - I: 	Executing process ../Reference Bot\Reference\bin\Debug\Reference.exe A "C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\2099624094\216\A"
+19-04-2016 21:19:13:826 - I: 	Bot has 4000ms to run before it will be forcefully killed
+19-04-2016 21:19:14:029 - I: 	Output from bot: Targeting Previous Node Location(2,17)
+19-04-2016 21:19:14:030 - I: 	Output from bot: *********************
+19-04-2016 21:19:14:030 - I: 	Output from bot: *   ### # # # ##    *
+19-04-2016 21:19:14:030 - I: 	Output from bot: * * * * *#* * *#* * *
+19-04-2016 21:19:14:030 - I: 	Output from bot: *                   *
+19-04-2016 21:19:14:030 - I: 	Output from bot: *#* * * * * * * * *#*
+19-04-2016 21:19:14:030 - I: 	Output from bot: *#                 #*
+19-04-2016 21:19:14:030 - I: 	Output from bot: * * * *#*#* * * * * *
+19-04-2016 21:19:14:030 - I: 	Output from bot: *       #           *
+19-04-2016 21:19:14:030 - I: 	Output from bot: * * * *#*#* * * *#* *
+19-04-2016 21:19:14:031 - I: 	Output from bot: *        # #        *
+19-04-2016 21:19:14:031 - I: 	Output from bot: * * * * *   * * * *#*
+19-04-2016 21:19:14:031 - I: 	Output from bot: *           #       *
+19-04-2016 21:19:14:031 - I: 	Output from bot: * * * * * * * * * * *
+19-04-2016 21:19:14:031 - I: 	Output from bot: *                   *
+19-04-2016 21:19:14:031 - I: 	Output from bot: * * * * * * * * * * *
+19-04-2016 21:19:14:031 - I: 	Output from bot: *D                  *
+19-04-2016 21:19:14:031 - I: 	Output from bot: *A* * * * * * * * *#*
+19-04-2016 21:19:14:031 - I: 	Output from bot: *                   *
+19-04-2016 21:19:14:031 - I: 	Output from bot: * * * * * * * *#* * *
+19-04-2016 21:19:14:031 - I: 	Output from bot: *       # # # ##    *
+19-04-2016 21:19:14:031 - I: 	Output from bot: *********************
+19-04-2016 21:19:14:035 - I: 	Output from bot: System.ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
+19-04-2016 21:19:14:035 - I: 	Output from bot: Parameter name: index
+19-04-2016 21:19:14:036 - I: 	Output from bot:    at System.ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument argument, ExceptionResource resource)
+19-04-2016 21:19:14:036 - I: 	Output from bot:    at System.Collections.Generic.List`1.get_Item(Int32 index)
+19-04-2016 21:19:14:036 - I: 	Output from bot:    at Reference.Strategies.AStar.AStarStrategy.FindBestCommand(NodeMap nodeMap) in C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Reference Bot\Reference\Strategies\AStar\AStarStrategy.cs:line 64
+19-04-2016 21:19:14:036 - I: 	Output from bot:    at Reference.Strategies.AStar.AStarStrategy.ExecuteStrategy(GameMap gameMap, Char playerKey) in C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Reference Bot\Reference\Strategies\AStar\AStarStrategy.cs:line 25
+19-04-2016 21:19:14:037 - E: 	Output from bot: 
+19-04-2016 21:19:14:037 - I: 	Output from bot:    at Reference.Program.Main(String[] args) in C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Reference Bot\Reference\Program.cs:line 40
+19-04-2016 21:19:14:037 - I: 	Output from bot: 
+19-04-2016 21:19:14:039 - I: 	Your bots total execution time was 00:00:00.2221968

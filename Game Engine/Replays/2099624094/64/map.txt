@@ -1,0 +1,58 @@
+﻿Map Width: 21, Map Height: 21, Current Round: 65, Seed: 1228978540
+#####################
+#   +++ + + + ++    #
+# # #+# #+# # #+# # #
+#                   #
+#+# # # # # # # # #+#
+#+                 +#
+# # # #+#+#D# # # # #
+#      ++ + !       #
+# # # #+#+#+# # #+# #
+# +    ++++++     + #
+#+# # #+#+$+#+# # #+#
+# +    +++++++      #
+# #+# #+#+#+#+# # # #
+#      A+ + ++    + #
+# # # #&#+#+#&# # # #
+#+      B3         +#
+#+# # # # # # # # #+#
+#                   #
+# # #+# #+#+# #+# # #
+#   +++ + + + ++    #
+#####################
+---------------------------
+Player Name: John
+Key: A
+Points: 110
+Status: Alive
+Bombs: 
+BombBag: 1
+BlastRadius: 4
+---------------------------
+---------------------------
+Player Name: John
+Key: B
+Points: 121
+Status: Alive
+Bombs: {x:10,y:16,fuse:3,radius:2}
+BombBag: 0
+BlastRadius: 2
+---------------------------
+---------------------------
+Player Name: John
+Key: C
+Points: -259
+Status: Dead
+Bombs: 
+BombBag: 1
+BlastRadius: 2
+---------------------------
+---------------------------
+Player Name: John
+Key: D
+Points: 158
+Status: Alive
+Bombs: 
+BombBag: 2
+BlastRadius: 4
+---------------------------

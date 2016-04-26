@@ -1,0 +1,25 @@
+﻿
+16-04-2016 22:11:17:266 - I: 	Added Command MovementCommand(Down) for Player PlayerEntity(X:6, Y:5, Key:A)
+16-04-2016 22:11:17:500 - I: 	Added Command MovementCommand(Up) for Player PlayerEntity(X:16, Y:17, Key:B)
+16-04-2016 22:11:17:732 - I: 	Added Command MovementCommand(Up) for Player PlayerEntity(X:6, Y:17, Key:C)
+16-04-2016 22:11:17:961 - I: 	Added Command MovementCommand(Down) for Player PlayerEntity(X:16, Y:5, Key:D)
+16-04-2016 22:11:17:961 - D: 	Beginning round processing
+16-04-2016 22:11:17:961 - D: 	Removing Bomb Explosions from map
+16-04-2016 22:11:17:961 - D: 	Decreasing Bomb Timers
+16-04-2016 22:11:17:961 - D: 	Detonating Bombs
+16-04-2016 22:11:17:964 - I: 	Detonating Bomb BombEntity(X:4, Y:4, Radius:1, Timer:0, Owner:A)
+16-04-2016 22:11:17:966 - I: 	Detonating Bomb BombEntity(X:18, Y:4, Radius:1, Timer:0, Owner:D)
+16-04-2016 22:11:17:966 - I: 	Detonating Bomb BombEntity(X:4, Y:18, Radius:1, Timer:0, Owner:C)
+16-04-2016 22:11:17:966 - I: 	Detonating Bomb BombEntity(X:18, Y:18, Radius:1, Timer:0, Owner:B)
+16-04-2016 22:11:17:967 - D: 	Processing Player Commands
+16-04-2016 22:11:17:967 - D: 	Applying player power ups
+16-04-2016 22:11:17:967 - D: 	Destroying marked entities
+16-04-2016 22:11:17:971 - D: 	Destroyed Entity DestructibleWallEntity(X:4, Y:5)
+16-04-2016 22:11:17:971 - D: 	Destroyed Entity DestructibleWallEntity(X:18, Y:5)
+16-04-2016 22:11:17:971 - D: 	Destroyed Entity DestructibleWallEntity(X:4, Y:17)
+16-04-2016 22:11:17:971 - D: 	Destroyed Entity DestructibleWallEntity(X:18, Y:17)
+16-04-2016 22:11:17:979 - I: 	Player PlayerEntity(X:6, Y:6, Key:A) has a movement coverage of 3,20% for the map
+16-04-2016 22:11:17:979 - I: 	Player PlayerEntity(X:16, Y:16, Key:B) has a movement coverage of 3,20% for the map
+16-04-2016 22:11:17:979 - I: 	Player PlayerEntity(X:6, Y:16, Key:C) has a movement coverage of 3,20% for the map
+16-04-2016 22:11:17:979 - I: 	Player PlayerEntity(X:16, Y:6, Key:D) has a movement coverage of 3,20% for the map
+16-04-2016 22:11:17:979 - D: 	Round processing complete

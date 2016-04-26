@@ -1,0 +1,58 @@
+﻿Map Width: 21, Map Height: 21, Current Round: 7, Seed: 196732608
+#####################
+#   ++++  +  ++++   #
+# # #+#+# # #+#+# # #
+#  2 A  ++ ++  D 2  #
+#+#+# # # # # # #+#+#
+#+ ++  ++   ++  ++ +#
+# # #+#+# # #+#+# # #
+#  +    +   +    +  #
+# # # # #+#+# # # # #
+#+ +++  +++++  +++ +#
+#+#+# # #+$+# # #+#+#
+#+ +++  +++++  +++ +#
+# # # # #+#+# # # # #
+#  +    +   +    +  #
+# # #+#+# # #+#+# # #
+#+ ++  ++   ++  ++ +#
+#+#+# # # # # # #+#+#
+#  2 C  ++ ++  B 2  #
+# # #+#+# # #+#+# # #
+#   ++++  +  ++++   #
+#####################
+---------------------------
+Player Name: John
+Key: A
+Points: 2
+Status: Alive
+Bombs: {x:4,y:4,fuse:2,radius:1}
+BombBag: 0
+BlastRadius: 1
+---------------------------
+---------------------------
+Player Name: John
+Key: B
+Points: 2
+Status: Alive
+Bombs: {x:18,y:18,fuse:2,radius:1}
+BombBag: 0
+BlastRadius: 1
+---------------------------
+---------------------------
+Player Name: John
+Key: C
+Points: 2
+Status: Alive
+Bombs: {x:4,y:18,fuse:2,radius:1}
+BombBag: 0
+BlastRadius: 1
+---------------------------
+---------------------------
+Player Name: John
+Key: D
+Points: 2
+Status: Alive
+Bombs: {x:18,y:4,fuse:2,radius:1}
+BombBag: 0
+BlastRadius: 1
+---------------------------

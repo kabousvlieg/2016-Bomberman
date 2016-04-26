@@ -1,0 +1,21 @@
+﻿
+16-04-2016 22:11:30:580 - I: 	Added Command DoNothingCommand for Player PlayerEntity(X:2, Y:2, Key:A)
+16-04-2016 22:11:40:095 - I: 	Added Command MovementCommand(Up) for Player PlayerEntity(X:20, Y:20, Key:B)
+16-04-2016 22:11:42:881 - I: 	Added Command MovementCommand(Up) for Player PlayerEntity(X:2, Y:20, Key:C)
+16-04-2016 22:11:44:177 - I: 	Added Command MovementCommand(Up) for Player PlayerEntity(X:20, Y:2, Key:D)
+16-04-2016 22:11:44:180 - D: 	Beginning round processing
+16-04-2016 22:11:44:181 - D: 	Removing Bomb Explosions from map
+16-04-2016 22:11:44:182 - D: 	Decreasing Bomb Timers
+16-04-2016 22:11:44:183 - D: 	Detonating Bombs
+16-04-2016 22:11:44:187 - D: 	Processing Player Commands
+16-04-2016 22:11:44:195 - E: 	Failed to process command MovementCommand(Up) for player PlayerEntity(X:20, Y:2, Key:D)GameEngine.Exceptions.InvalidCommandException: Cannot move to Location(X:20,Y:1), IndestructibleWallEntity(X:20, Y:1) already occupies this space
+   at GameEngine.Commands.PlayerCommands.MovementCommand.PerformCommand(GameMap gameMap, PlayerEntity player, CommandTransaction commandTransaction) in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\Commands\PlayerCommands\MovementCommand.cs:line 52
+   at GameEngine.Engine.GameRoundProcessor.ProcessPlayerCommands() in w:\Projects\100k\2016\GitHub\Game Engine\Bomberman\GameEngine\Engine\GameRoundProcessor.cs:line 305
+
+16-04-2016 22:11:44:218 - D: 	Applying player power ups
+16-04-2016 22:11:44:221 - D: 	Destroying marked entities
+16-04-2016 22:11:44:230 - I: 	Player PlayerEntity(X:2, Y:2, Key:A) has a movement coverage of 0,36% for the map
+16-04-2016 22:11:44:230 - I: 	Player PlayerEntity(X:20, Y:19, Key:B) has a movement coverage of 0,71% for the map
+16-04-2016 22:11:44:230 - I: 	Player PlayerEntity(X:2, Y:19, Key:C) has a movement coverage of 0,71% for the map
+16-04-2016 22:11:44:230 - I: 	Player PlayerEntity(X:20, Y:2, Key:D) has a movement coverage of 0,36% for the map
+16-04-2016 22:11:44:230 - D: 	Round processing complete

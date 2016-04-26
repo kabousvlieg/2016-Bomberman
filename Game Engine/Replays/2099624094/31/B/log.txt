@@ -1,0 +1,30 @@
+﻿
+19-04-2016 21:17:08:841 - D: 	Executing bot with following commands ../Reference Bot\Reference\bin\Debug\Reference.exe B "C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\2099624094\31\B"
+19-04-2016 21:17:08:841 - I: 	Executing process ../Reference Bot\Reference\bin\Debug\Reference.exe B "C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\2099624094\31\B"
+19-04-2016 21:17:08:850 - I: 	Bot has 4000ms to run before it will be forcefully killed
+19-04-2016 21:17:09:069 - I: 	Output from bot: *********************
+19-04-2016 21:17:09:069 - I: 	Output from bot: *   ### # # # ##    *
+19-04-2016 21:17:09:069 - I: 	Output from bot: * * *#* *#*#* *#* * *
+19-04-2016 21:17:09:069 - I: 	Output from bot: *                   *
+19-04-2016 21:17:09:069 - I: 	Output from bot: *#* * * * * * * * *#*
+19-04-2016 21:17:09:069 - I: 	Output from bot: *#  A  #       D   #*
+19-04-2016 21:17:09:069 - I: 	Output from bot: * * * *#*#*#*#* * * *
+19-04-2016 21:17:09:069 - I: 	Output from bot: *    #### # ####  # *
+19-04-2016 21:17:09:069 - I: 	Output from bot: * * * *#*#*#*#* *#* *
+19-04-2016 21:17:09:069 - I: 	Output from bot: * #    #######    # *
+19-04-2016 21:17:09:069 - I: 	Output from bot: *#* * *#*#.#*#* * *#*
+19-04-2016 21:17:09:069 - I: 	Output from bot: * #    ###..##    # *
+19-04-2016 21:17:09:069 - I: 	Output from bot: * *#* *#*#*.*#* *#* *
+19-04-2016 21:17:09:069 - I: 	Output from bot: * #  C### #.....  # *
+19-04-2016 21:17:09:069 - I: 	Output from bot: * * * *#*#*#*#*B* * *
+19-04-2016 21:17:09:069 - I: 	Output from bot: *#           #     #*
+19-04-2016 21:17:09:070 - I: 	Output from bot: *#* * * * * * * * *#*
+19-04-2016 21:17:09:070 - I: 	Output from bot: *                   *
+19-04-2016 21:17:09:070 - I: 	Output from bot: * * *#* *#*#* *#* * *
+19-04-2016 21:17:09:070 - I: 	Output from bot: *   ### # # # ##    *
+19-04-2016 21:17:09:070 - I: 	Output from bot: *********************
+19-04-2016 21:17:09:070 - I: 	Output from bot: Executing move command
+19-04-2016 21:17:09:071 - I: 	Output from bot: Sending Back command MoveUp
+19-04-2016 21:17:09:073 - E: 	Output from bot: 
+19-04-2016 21:17:09:073 - I: 	Output from bot: 
+19-04-2016 21:17:09:074 - I: 	Your bots total execution time was 00:00:00.2326261
