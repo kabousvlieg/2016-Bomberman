@@ -17,6 +17,7 @@ namespace Reference
         {
             try
             {
+                var stopwatch = Stopwatch.StartNew();
                 char playerKey;
                 string outputLocation;
                 string inputMap;
@@ -41,6 +42,9 @@ namespace Reference
 
                 Console.WriteLine("Sending Back command " + command);
                 File.WriteAllText(Path.Combine(outputLocation, "move.txt"), ((int)command).ToString());
+
+                stopwatch.Stop();
+                Debug.WriteLine("[BOT]\tBot finished in {0} ms.", stopwatch.ElapsedMilliseconds);
 
                 return 0;
             }
