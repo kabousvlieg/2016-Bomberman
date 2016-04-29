@@ -39,6 +39,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -69,6 +70,7 @@
     <Compile Include="Strategies\AStar\NodeMap.cs" />
     <Compile Include="Strategies\AStar\PathFinder.cs" />
     <Compile Include="Strategies\IStrategy.cs" />
+    <Compile Include="Strategies\MDP\MDPStrategy.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

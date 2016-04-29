@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Reference.Domain.Map;
 using Reference.Strategies.AStar;
+using Reference.Commands;
+using Reference.Strategies.MDP;
 
 namespace Reference
 {
@@ -36,16 +33,28 @@ namespace Reference
                 }
 
                 var map = GameMap.FromJson(inputMap);
-                var gameStrategy = new AStarStrategy();
-
-                var command = gameStrategy.ExecuteStrategy(map, playerKey);
+                GameCommand command;
+                if (playerKey == 'A')
+                {
+                    var gameStrategy = new MdpStrategy();
+                    command = gameStrategy.ExecuteStrategy(map, playerKey);
+                }
+                else
+                {
+                    var gameStrategy = new AStarStrategy();
+                    command = gameStrategy.ExecuteStrategy(map, playerKey);
+                }
+               
 
                 Console.WriteLine("Sending Back command " + command);
                 File.WriteAllText(Path.Combine(outputLocation, "move.txt"), ((int)command).ToString());
-
                 stopwatch.Stop();
                 Debug.WriteLine("[BOT]\tBot finished in {0} ms.", stopwatch.ElapsedMilliseconds);
-
+                if (stopwatch.ElapsedMilliseconds > 2000)
+                {
+                    System.Windows.Forms.MessageBox.Show("We overran");
+                }
+                //Console.ReadKey();
                 return 0;
             }
             catch (Exception ex)
