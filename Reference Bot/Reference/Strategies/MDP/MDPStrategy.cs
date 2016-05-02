@@ -21,7 +21,8 @@ namespace Reference.Strategies.MDP
         private readonly int WallValue = 10;
         private readonly int PowerUpValue = 100;
         private readonly int SuperPowerUpValue = 200;
-        private readonly int PenaltyValue = -3;
+        private readonly int PenaltyValue = 3;
+        private readonly int BombValue = -100;
 
 
         enum MdpTypes
@@ -40,7 +41,7 @@ namespace Reference.Strategies.MDP
         {
             public MdpTypes type;
             public int value;
-            public int validValue;
+            public bool validValue;
         }
 
         public GameCommand ExecuteStrategy(GameMap gameMap, char playerKey)
@@ -49,7 +50,204 @@ namespace Reference.Strategies.MDP
             //var nodeMap = new NodeMap(gameMap, playerKey);
             MdpBlock[,] MdpMap = new MdpBlock[gameMap.MapHeight + 1, gameMap.MapWidth + 1];
             
-            //Draw map
+            DrawMap(playerKey);
+            AssignValues(playerKey, MdpMap);
+
+            //Calculate MDP
+            CalculateMdp(gameMap, MdpMap);
+
+            DrawMdpMap(MdpMap);
+            return GameCommand.DoNothing;
+        }
+
+        private void CalculateMdp(GameMap gameMap, MdpBlock[,] MdpMap)
+        {
+            var stillNotDone = false;
+            do
+            {
+                stillNotDone = false;
+                for (var y = 1; y <= gameMap.MapHeight; y++)
+                {
+                    for (var x = 1; x <= gameMap.MapWidth; x++)
+                    {
+                        if (MdpMap[x, y].type == MdpTypes.Path)
+                        {
+                            //Get largest value neighbour
+                            var largestNeighbour = -100;
+                            var largestNeigbourValid = false;
+                            if (x > 1)
+                            {
+                                if (MdpMap[x - 1, y].validValue)
+                                {
+                                    if (MdpMap[x - 1, y].value > largestNeighbour)
+                                    {
+                                        largestNeighbour = MdpMap[x - 1, y].value;
+                                        largestNeigbourValid = true;
+                                    }
+                                }
+                            }
+                            if (x < gameMap.MapWidth)
+                            {
+                                if (MdpMap[x + 1, y].validValue)
+                                {
+                                    if (MdpMap[x + 1, y].value > largestNeighbour)
+                                    {
+                                        largestNeighbour = MdpMap[x + 1, y].value;
+                                        largestNeigbourValid = true;
+                                    }
+                                }
+                            }
+                            if (y > 1)
+                            {
+                                if (MdpMap[x, y - 1].validValue)
+                                {
+                                    if (MdpMap[x, y - 1].value > largestNeighbour)
+                                    {
+                                        largestNeighbour = MdpMap[x, y - 1].value;
+                                        largestNeigbourValid = true;
+                                    }
+                                }
+                            }
+                            if (y < gameMap.MapHeight)
+                            {
+                                if (MdpMap[x, y + 1].validValue)
+                                {
+                                    if (MdpMap[x, y + 1].value > largestNeighbour)
+                                    {
+                                        largestNeighbour = MdpMap[x, y + 1].value;
+                                        largestNeigbourValid = true;
+                                    }
+                                }
+                            }
+
+                            int calculatedValue;
+                            //Calculate our value
+                            if (largestNeigbourValid)
+                            {
+                                calculatedValue = largestNeighbour - PenaltyValue;
+                                MdpMap[x, y].value = calculatedValue;
+                                MdpMap[x, y].validValue = true;
+                            }
+                            else
+                                stillNotDone = true; //Not all blocks has a value yet, TODO check for getting stuck here
+                            //If difference is still too big, mark stillNotDone
+                            //TODO limit the amount of iterations we will go through
+                        }
+                    }
+                }
+                DrawMdpMap(MdpMap);
+            } while (stillNotDone);
+        }
+
+        private void DrawMdpMap(MdpBlock[,] MdpMap)
+        {
+            //Scale output to biggest value
+            var largestValue = 1;
+            for (var y = 1; y <= _gameMap.MapHeight; y++)
+            {
+                for (var x = 1; x <= _gameMap.MapWidth; x++)
+                {
+                    if ((MdpMap[x, y].validValue) &&
+                        (MdpMap[x, y].type == MdpTypes.Path) &&
+                        (MdpMap[x, y].value > largestValue))
+                    {
+                        largestValue = MdpMap[x, y].value;
+                    }
+                }
+            }
+
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+            for (var y = 1; y <= _gameMap.MapHeight; y++)
+            {
+                for (var x = 1; x <= _gameMap.MapWidth; x++)
+                {
+                    if (MdpMap[x, y].type == MdpTypes.Me)
+                        Debug.Write("A");
+                    else if (MdpMap[x, y].type == MdpTypes.OtherPlayer)
+                        Debug.Write("B");
+                    else if (MdpMap[x, y].type == MdpTypes.Indestructable)
+                        Debug.Write("#");
+                    else if (MdpMap[x, y].type == MdpTypes.Wall)
+                        Debug.Write("+");
+                    else
+                        Debug.Write(((int) (MdpMap[x, y].value*9/largestValue)).ToString());
+                }
+                Debug.WriteLine("");
+            }
+            Debug.WriteLine("");
+        }
+
+        private void AssignValues(char playerKey, MdpBlock[,] MdpMap)
+        {
+            for (var y = 1; y <= _gameMap.MapHeight; y++)
+            {
+                for (var x = 1; x <= _gameMap.MapWidth; x++)
+                {
+                    var block = _gameMap.GetBlockAtLocation(x, y);
+                    if (block.Entity != null)
+                    {
+                        if (block.Entity is DestructibleWallEntity)
+                        {
+                            MdpMap[x, y].type = MdpTypes.Wall;
+                            MdpMap[x, y].value = WallValue;
+                            MdpMap[x, y].validValue = true;
+                        }
+                        else if (block.Entity is IndestructibleWallEntity)
+                        {
+                            MdpMap[x, y].type = MdpTypes.Indestructable;
+                            MdpMap[x, y].validValue = false;
+                        }
+                        else if (block.Entity is PlayerEntity)
+                        {
+                            if ((block.Entity as PlayerEntity).Key == playerKey)
+                                MdpMap[x, y].type = MdpTypes.Me;
+                            else
+                                MdpMap[x, y].type = MdpTypes.OtherPlayer;
+                            MdpMap[x, y].validValue = false;
+                        }
+                        else if (block.Entity is BombEntity)
+                        {
+                            MdpMap[x, y].type = MdpTypes.Bomb;
+                            MdpMap[x, y].value = BombValue;
+                            MdpMap[x, y].validValue = true;
+                        }
+                        else if (block.Entity is BombBagPowerUpEntity)
+                        {
+                            MdpMap[x, y].type = MdpTypes.PowerUp;
+                            MdpMap[x, y].value = PowerUpValue;
+                            MdpMap[x, y].validValue = true;
+                        }
+                        else if (block.Entity is BombRaduisPowerUpEntity)
+                        {
+                            MdpMap[x, y].type = MdpTypes.PowerUp;
+                            MdpMap[x, y].value = PowerUpValue;
+                            MdpMap[x, y].validValue = true;
+                        }
+                        else if (block.Entity is SuperPowerUp)
+                        {
+                            MdpMap[x, y].type = MdpTypes.SuperPowerUp;
+                            MdpMap[x, y].value = SuperPowerUpValue;
+                            MdpMap[x, y].validValue = true;
+                        }
+                        else
+                        {
+                            MdpMap[x, y].type = MdpTypes.Path;
+                            MdpMap[x, y].validValue = false;
+                        }
+                    }
+                    else
+                    {
+                        MdpMap[x, y].type = MdpTypes.Path;
+                        MdpMap[x, y].validValue = false;
+                    }
+                }
+            }
+        }
+
+        private void DrawMap(char playerKey)
+        {
             Debug.WriteLine("");
             Debug.WriteLine("");
             Debug.WriteLine("");
@@ -61,103 +259,27 @@ namespace Reference.Strategies.MDP
                     if (block.Entity != null)
                     {
                         if (block.Entity is DestructibleWallEntity)
-                        {
                             Debug.Write("+");
-                            
-                            MdpMap[x,y].type = MdpTypes.Wall;
-                            MdpMap[x, y].value = WallValue;
-                            MdpMap[x, y].value = WallValue;
-                        }
                         else if (block.Entity is IndestructibleWallEntity)
-                        {
                             Debug.Write("#");
-                            MdpMap[x, y].type = MdpTypes.Indestructable;
-                        }
                         else if (block.Entity is PlayerEntity)
-                        {
-                            if ((block.Entity as PlayerEntity).Key == playerKey)
-                                MdpMap[x,y].type = MdpTypes.Me;
-                            else
-                                MdpMap[x, y].type = MdpTypes.OtherPlayer;
                             Debug.Write((block.Entity as PlayerEntity).Key);
-                        }
                         else if (block.Entity is BombEntity)
-                        {
-                            MdpMap[x, y].type = MdpTypes.Bomb;
                             Debug.Write("?");
-                        }
                         else if (block.Entity is BombBagPowerUpEntity)
-                        {
-                            MdpMap[x, y].type = MdpTypes.PowerUp;
                             Debug.Write("&");
-                        }
                         else if (block.Entity is BombRaduisPowerUpEntity)
-                        {
-                            MdpMap[x, y].type = MdpTypes.PowerUp;
                             Debug.Write("&");
-                        }
                         else if (block.Entity is SuperPowerUp)
-                        {
-                            MdpMap[x, y].type = MdpTypes.SuperPowerUp;
                             Debug.Write("&");
-                        }
                         else
-                        {
-                            MdpMap[x, y].type = MdpTypes.Path;
                             Debug.Write(" ");
-                        }
                     }
                     else Debug.Write(" ");
-
                 }
                 Debug.WriteLine("");
             }
-            Debug.WriteLine("");
-
-            //Calculate MDP
-            var stillNotDone = false;
-            do
-            {
-                stillNotDone = false;
-                for (var y = 1; y < gameMap.MapHeight; y++)
-                {
-                    for (var x = 1; x < gameMap.MapWidth; x++)
-                    {
-                        if (MdpMap[x, y].type == MdpTypes.Path)
-                        {
-                            //Get largest value neighbour
-                            int largestNeighbour;
-
-
-                            //Calculate our value
-                            //If difference is still too big, mark stillNotDone
-                        } 
-                    }
-                }
-            } while (stillNotDone);
-
-            //Draw MDP map
-            for (var y = 1; y <= _gameMap.MapHeight; y++)
-            {
-                for (var x = 1; x <= _gameMap.MapWidth; x++)
-                {
-                    if (MdpMap[x,y].type == MdpTypes.Me)
-                        Debug.Write("A");
-                    else if (MdpMap[x, y].type == MdpTypes.OtherPlayer)
-                        Debug.Write("B");
-                    else if (MdpMap[x, y].type == MdpTypes.Indestructable)
-                        Debug.Write("#");
-                    else if (MdpMap[x, y].type == MdpTypes.Wall)
-                        Debug.Write("+");
-                    else
-                        Debug.Write(((int)(MdpMap[x,y].value / 2)).ToString());  
-                }
-                Debug.WriteLine("");
-            }
-            Debug.WriteLine("");
-            return GameCommand.DoNothing;
         }
-
     }
 }
 
