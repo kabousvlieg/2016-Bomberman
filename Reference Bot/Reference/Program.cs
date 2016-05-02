@@ -52,7 +52,7 @@ namespace Reference
                 Debug.WriteLine("[BOT]\tBot finished in {0} ms.", stopwatch.ElapsedMilliseconds);
                 if (stopwatch.ElapsedMilliseconds > 2000)
                 {
-                    System.Windows.Forms.MessageBox.Show("We overran");
+                    //System.Windows.Forms.MessageBox.Show("Overran time limit " + stopwatch.ElapsedMilliseconds.ToString() + "ms");
                 }
                 //Console.ReadKey();
                 return 0;

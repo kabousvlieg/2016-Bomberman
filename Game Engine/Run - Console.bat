@@ -1,2 +1,2 @@
-Bomberman.exe --pretty -c 4
+Bomberman.exe --pretty -c 1 -b "../Reference Bot"
 pause
