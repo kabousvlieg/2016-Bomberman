@@ -23,7 +23,7 @@ namespace Reference
                     playerKey = 'A';
                     outputLocation = Path.Combine(@"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Reference Bot\", playerKey.ToString());
                     inputMap =
-                        File.ReadAllText(@"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\32735501\0\state.json");
+                        File.ReadAllText(@"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\1387381650\4\state.json");
                 }
                 else
                 {

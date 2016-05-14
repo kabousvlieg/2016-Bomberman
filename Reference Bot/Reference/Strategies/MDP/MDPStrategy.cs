@@ -18,7 +18,7 @@ namespace Reference.Strategies.MDP
     public class MdpStrategy : IStrategy
     {
         private GameMap _gameMap;
-        private PlayerPosition _playerPosition;
+        private PlayerEntity _player;
 
         private readonly int WallValue = 10;
         private readonly int PowerUpValue = 100;
@@ -44,93 +44,145 @@ namespace Reference.Strategies.MDP
             public MdpTypes type;
             public int value;
             public bool validValue;
-        }
-
-        struct PlayerPosition
-        {
-            public int x;
-            public int y;
+            public bool inRangeOfBomb;
         }
 
         public GameCommand ExecuteStrategy(GameMap gameMap, char playerKey)
         {
             this._gameMap = gameMap;
             //var nodeMap = new NodeMap(gameMap, playerKey);
-            MdpBlock[,] MdpMap = new MdpBlock[gameMap.MapWidth + 1, gameMap.MapHeight + 1];
+            MdpBlock[,] mdpMap = new MdpBlock[gameMap.MapWidth + 1, gameMap.MapHeight + 1];
             
             DrawMap(playerKey);
-            AssignValues(playerKey, MdpMap);
-            CalculateMdp(gameMap, MdpMap);
-            var bestMove = CalculateBestMoveFromMdp(MdpMap);
-            OverrideMdpMoveWithRuleEngine(gameMap, ref bestMove);
-            DrawMdpMap(MdpMap);
+            AssignValues(playerKey, mdpMap);
+            CalculateMdp(mdpMap);
+            DrawMdpMap(mdpMap);
+            var bestMove = CalculateBestMoveFromMdp(mdpMap);
+            bestMove = OverrideMdpMoveWithRuleEngine(bestMove, mdpMap);
             return bestMove;
         }
 
-        private void OverrideMdpMoveWithRuleEngine(GameMap gameMap, ref GameCommand bestMove)
+        private GameCommand OverrideMdpMoveWithRuleEngine(GameCommand bestMdpMove, MdpBlock[,] mdpMap)
         {
+            //Are we currently in bomb range?
+            if (mdpMap[_player.Location.X, _player.Location.Y].inRangeOfBomb)
+                return bestMdpMove;
             //Check for survival
                 //Will our bestMdpMove move into explosion
                 //Will our bestMdpMove move into range of bomb
 
             //Check if we can blow up the enemy
             //Check if we can plant a bomb
+            if (CanWePlantABomb())
+                return GameCommand.PlaceBomb;
+            return bestMdpMove;
+        }
 
-            //bestMove = GameCommand.DoNothing;
+        private bool CanWePlantABomb()
+        {
+            if (_player.BombBag == 0)
+                return false;
+            GameBlock block;
+            if (_player.Location.X > 1)
+            {
+                block = _gameMap.GetBlockAtLocation(_player.Location.X - 1, _player.Location.Y);
+                if (block.Entity != null)
+                {
+                    if (block.Entity is DestructibleWallEntity)
+                        return true;
+                }
+            }
+            if (_player.Location.X < _gameMap.MapWidth)
+            {
+                block = _gameMap.GetBlockAtLocation(_player.Location.X + 1, _player.Location.Y);
+                if (block.Entity != null)
+                {
+                    if (block.Entity is DestructibleWallEntity)
+                        return true;
+                }
+            }
+            if (_player.Location.Y > 1)
+            {
+                block = _gameMap.GetBlockAtLocation(_player.Location.X, _player.Location.Y - 1);
+                if (block.Entity != null)
+                {
+                    if (block.Entity is DestructibleWallEntity)
+                        return true;
+                }
+            }
+            if (_player.Location.Y < _gameMap.MapHeight)
+            {
+                block = _gameMap.GetBlockAtLocation(_player.Location.X, _player.Location.Y + 1);
+                if (block.Entity != null)
+                {
+                    if (block.Entity is DestructibleWallEntity)
+                        return true;
+                }
+            }
+            return false;
         }
 
         private GameCommand CalculateBestMoveFromMdp(MdpBlock[,] mdpMap)
         {
+            //TODO 
+            //1 - We can still get stuck here...
             var largestMdpValue = int.MinValue;
             var bestMove = GameCommand.DoNothing;
-            if (_playerPosition.x > 1)
+            if (_player.Location.X > 1)
             {
-                if (mdpMap[_playerPosition.x - 1, _playerPosition.y].validValue &&
-                    mdpMap[_playerPosition.x - 1, _playerPosition.y].value > largestMdpValue)
+                if (mdpMap[_player.Location.X - 1, _player.Location.Y].validValue &&
+                    mdpMap[_player.Location.X - 1, _player.Location.Y].type == MdpTypes.Path &&
+                    mdpMap[_player.Location.X - 1, _player.Location.Y].value > largestMdpValue)
                 {
-                    largestMdpValue = mdpMap[_playerPosition.x - 1, _playerPosition.y].value;
+                    largestMdpValue = mdpMap[_player.Location.X - 1, _player.Location.Y].value;
                     bestMove = GameCommand.MoveLeft;
                 }
             }
-            if (_playerPosition.x < _gameMap.MapWidth)
+            if (_player.Location.X < _gameMap.MapWidth)
             {
-                if (mdpMap[_playerPosition.x + 1, _playerPosition.y].validValue &&
-                    mdpMap[_playerPosition.x + 1, _playerPosition.y].value > largestMdpValue)
+                if (mdpMap[_player.Location.X + 1, _player.Location.Y].validValue &&
+                    mdpMap[_player.Location.X + 1, _player.Location.Y].type == MdpTypes.Path &&
+                    mdpMap[_player.Location.X + 1, _player.Location.Y].value > largestMdpValue)
                 {
-                    largestMdpValue = mdpMap[_playerPosition.x + 1, _playerPosition.y].value;
+                    largestMdpValue = mdpMap[_player.Location.X + 1, _player.Location.Y].value;
                     bestMove = GameCommand.MoveRight;
                 }
             }
-            if (_playerPosition.y > 1)
+            if (_player.Location.Y > 1)
             {
-                if (mdpMap[_playerPosition.x, _playerPosition.y - 1].validValue &&
-                    mdpMap[_playerPosition.x, _playerPosition.y - 1].value > largestMdpValue)
+                if (mdpMap[_player.Location.X, _player.Location.Y - 1].validValue &&
+                    mdpMap[_player.Location.X, _player.Location.Y - 1].type == MdpTypes.Path &&
+                    mdpMap[_player.Location.X, _player.Location.Y - 1].value > largestMdpValue)
                 {
-                    largestMdpValue = mdpMap[_playerPosition.x, _playerPosition.y - 1].value;
+                    largestMdpValue = mdpMap[_player.Location.X, _player.Location.Y - 1].value;
                     bestMove = GameCommand.MoveUp;
                 }
             }
-            if (_playerPosition.y < _gameMap.MapHeight)
+            if (_player.Location.Y < _gameMap.MapHeight)
             {
-                if (mdpMap[_playerPosition.x, _playerPosition.y + 1].validValue &&
-                    mdpMap[_playerPosition.x, _playerPosition.y + 1].value > largestMdpValue)
+                if (mdpMap[_player.Location.X, _player.Location.Y + 1].validValue &&
+                    mdpMap[_player.Location.X, _player.Location.Y + 1].type == MdpTypes.Path &&
+                    mdpMap[_player.Location.X, _player.Location.Y + 1].value > largestMdpValue)
                 {
-                    largestMdpValue = mdpMap[_playerPosition.x, _playerPosition.y + 1].value;
+                    largestMdpValue = mdpMap[_player.Location.X, _player.Location.Y + 1].value;
                     bestMove = GameCommand.MoveDown;
                 }
             }
             return bestMove;
         }
 
-        private void CalculateMdp(GameMap gameMap, MdpBlock[,] MdpMap)
+        private void CalculateMdp(MdpBlock[,] MdpMap)
         {
+            //TODO notes:
+            //1 - What about squares with multiple destructible walls, should be worth more?
+        
             var stillNotDone = false;
             do
             {
                 stillNotDone = false;
-                for (var y = 1; y <= gameMap.MapHeight; y++)
+                for (var y = 1; y <= _gameMap.MapHeight; y++)
                 {
-                    for (var x = 1; x <= gameMap.MapWidth; x++)
+                    for (var x = 1; x <= _gameMap.MapWidth; x++)
                     {
                         if (MdpMap[x, y].type == MdpTypes.Path)
                         {
@@ -148,7 +200,7 @@ namespace Reference.Strategies.MDP
                                     }
                                 }
                             }
-                            if (x < gameMap.MapWidth)
+                            if (x < _gameMap.MapWidth)
                             {
                                 if (MdpMap[x + 1, y].validValue)
                                 {
@@ -170,7 +222,7 @@ namespace Reference.Strategies.MDP
                                     }
                                 }
                             }
-                            if (y < gameMap.MapHeight)
+                            if (y < _gameMap.MapHeight)
                             {
                                 if (MdpMap[x, y + 1].validValue)
                                 {
@@ -247,7 +299,12 @@ namespace Reference.Strategies.MDP
             {
                 for (var x = 1; x <= _gameMap.MapWidth; x++)
                 {
+                    //Defaults
+                    MdpMap[x, y].validValue = false;
+                    MdpMap[x, y].value = Int32.MinValue;
+                    MdpMap[x, y].inRangeOfBomb = false;
                     var block = _gameMap.GetBlockAtLocation(x, y);
+                    
                     if (block.Entity != null)
                     {
                         if (block.Entity is DestructibleWallEntity)
@@ -259,19 +316,17 @@ namespace Reference.Strategies.MDP
                         else if (block.Entity is IndestructibleWallEntity)
                         {
                             MdpMap[x, y].type = MdpTypes.Indestructable;
-                            MdpMap[x, y].validValue = false;
                         }
                         else if (block.Entity is PlayerEntity)
                         {
-                            if ((block.Entity as PlayerEntity).Key == playerKey)
+                            var entity = (block.Entity as PlayerEntity);
+                            if (entity.Key == playerKey)
                             {
                                 MdpMap[x, y].type = MdpTypes.Me;
-                                _playerPosition.x = x;
-                                _playerPosition.y = y;
+                                _player = entity;
                             }
                             else
                                 MdpMap[x, y].type = MdpTypes.OtherPlayer;
-                            MdpMap[x, y].validValue = false;
                         }
                         else if (block.Entity is BombEntity)
                         {
@@ -300,13 +355,38 @@ namespace Reference.Strategies.MDP
                         else
                         {
                             MdpMap[x, y].type = MdpTypes.Path;
-                            MdpMap[x, y].validValue = false;
                         }
                     }
                     else
                     {
                         MdpMap[x, y].type = MdpTypes.Path;
                         MdpMap[x, y].validValue = false;
+                    }
+                    if (block.Bomb != null)
+                    {
+                        MdpMap[x, y].type = MdpTypes.Bomb;
+                        MdpMap[x, y].value = BombValue;
+                        MdpMap[x, y].validValue = true;
+                        MdpMap[x, y].inRangeOfBomb = true;
+                        for (int range = 1; range <= block.Bomb.BombRadius; range++)
+                        {
+                            if (x - range > 1)
+                            {
+                                MdpMap[x - range, y].inRangeOfBomb = true;
+                            }
+                            if (x + range < _gameMap.MapWidth)
+                            {
+                                MdpMap[x + range, y].inRangeOfBomb = true;
+                            }
+                            if (y - range > 1)
+                            {
+                                MdpMap[x, y - range].inRangeOfBomb = true;
+                            }
+                            if (y + range < _gameMap.MapHeight)
+                            {
+                                MdpMap[x, y + range].inRangeOfBomb = true;
+                            }
+                        }
                     }
                 }
             }
@@ -322,7 +402,16 @@ namespace Reference.Strategies.MDP
                 for (var x = 1; x <= _gameMap.MapWidth; x++)
                 {
                     var block = _gameMap.GetBlockAtLocation(x, y);
-                    if (block.Entity != null)
+                    if (block.Bomb != null)
+                    {
+                       if (block.Entity is PlayerEntity)
+                        {
+                            Debug.Write(Char.ToLower((block.Entity as PlayerEntity).Key));
+                        }
+                        else
+                            Debug.Write(block.Bomb.BombTimer);
+                    }
+                    else if (block.Entity != null)
                     {
                         if (block.Entity is DestructibleWallEntity)
                             Debug.Write("+");
@@ -330,8 +419,6 @@ namespace Reference.Strategies.MDP
                             Debug.Write("#");
                         else if (block.Entity is PlayerEntity)
                             Debug.Write((block.Entity as PlayerEntity).Key);
-                        else if (block.Entity is BombEntity)
-                            Debug.Write("?");
                         else if (block.Entity is BombBagPowerUpEntity)
                             Debug.Write("&");
                         else if (block.Entity is BombRaduisPowerUpEntity)
@@ -341,6 +428,8 @@ namespace Reference.Strategies.MDP
                         else
                             Debug.Write(" ");
                     }
+                    else if (block.Exploding)
+                        Debug.Write("*");
                     else Debug.Write(" ");
                 }
                 Debug.WriteLine("");
