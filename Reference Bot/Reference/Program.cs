@@ -22,8 +22,16 @@ namespace Reference
                 {
                     playerKey = 'A';
                     outputLocation = Path.Combine(@"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Reference Bot\", playerKey.ToString());
-                    inputMap =
-                        File.ReadAllText(@"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\1387381650\4\state.json");
+                    var jsonFileLocation = @"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\89638302\4\state.json";
+                    if ( File.Exists(jsonFileLocation))
+                    {
+                        inputMap = File.ReadAllText(jsonFileLocation);
+                    }
+                    else
+                    {
+                        File.WriteAllText(Path.Combine(outputLocation, "move.txt"), ((int) GameCommand.DoNothing).ToString());
+                        return 0;
+                    }
                 }
                 else
                 {
