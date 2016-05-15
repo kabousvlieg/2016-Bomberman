@@ -22,7 +22,7 @@ namespace Reference
                 {
                     playerKey = 'A';
                     outputLocation = Path.Combine(@"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Reference Bot\", playerKey.ToString());
-                    var jsonFileLocation = @"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\89638302\4\state.json";
+                    var jsonFileLocation = @"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\621483218\14\state.json";
                     if ( File.Exists(jsonFileLocation))
                     {
                         inputMap = File.ReadAllText(jsonFileLocation);
