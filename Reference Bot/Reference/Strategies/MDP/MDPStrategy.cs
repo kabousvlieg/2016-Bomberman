@@ -299,6 +299,8 @@ namespace Reference.Strategies.MDP
                                 else
                                 {
                                     calculatedValue = largestNeighbour - PenaltyValue;
+                                    if (Math.Abs(calculatedValue - mdpMap[x, y].Value) > 10)
+                                        stillNotDone = true;
                                     mdpMap[x, y].Value = calculatedValue;
                                     mdpMap[x, y].ValidValue = true;
                                 }
@@ -306,6 +308,8 @@ namespace Reference.Strategies.MDP
                             else
                             {
                                 calculatedValue = largestNeighbour - PenaltyValue;
+                                if (Math.Abs(calculatedValue - mdpMap[x, y].Value) > 10)
+                                    stillNotDone = true;
                                 mdpMap[x, y].Value = calculatedValue;
                                 mdpMap[x, y].ValidValue = true;
                             }
@@ -477,23 +481,92 @@ namespace Reference.Strategies.MDP
                     }
                     if (block.Bomb == null) continue;
                     MdpMap[x, y].InRangeOfBomb = true;
+                    bool bombBlockedXMinusDirection = false;
+                    bool bombBlockedXPlusDirection = false;
+                    bool bombBlockedYMinusDirection = false;
+                    bool bombBlockedYPlusDirection = false;
                     for (int range = 1; range <= block.Bomb.BombRadius; range++)
                     {
-                        if (x - range > 1)
+                        GameBlock blockInRange;
+                        if ( (x - range > 1) && (!bombBlockedXMinusDirection) )
                         {
-                            MdpMap[x - range, y].InRangeOfBomb = true;
+                            blockInRange = _gameMap.GetBlockAtLocation(x - range, y);
+                            if (blockInRange.Entity != null)
+                            {
+                                if ((blockInRange.Entity is DestructibleWallEntity) ||
+                                    (blockInRange.Entity is IndestructibleWallEntity) ||
+                                    (blockInRange.Entity is DestructibleWallEntity)/* ||
+                                    (blockInRange.Entity is PlayerEntity)*/)
+                                {
+                                    bombBlockedXMinusDirection = true;
+                                }
+                                else
+                                {
+                                    MdpMap[x - range, y].InRangeOfBomb = true;
+                                }
+                            }
+                            else
+                                MdpMap[x - range, y].InRangeOfBomb = true;
                         }
-                        if (x + range < _gameMap.MapWidth)
+                        if ( (x + range < _gameMap.MapWidth) && (!bombBlockedXPlusDirection) )
                         {
-                            MdpMap[x + range, y].InRangeOfBomb = true;
+                            blockInRange = _gameMap.GetBlockAtLocation(x + range, y);
+                            if (blockInRange.Entity != null)
+                            {
+                                if ((blockInRange.Entity is DestructibleWallEntity) ||
+                                    (blockInRange.Entity is IndestructibleWallEntity) ||
+                                    (blockInRange.Entity is DestructibleWallEntity)/* ||
+                                    (blockInRange.Entity is PlayerEntity)*/)
+                                {
+                                    bombBlockedXPlusDirection = true;
+                                }
+                                else
+                                {
+                                    MdpMap[x + range, y].InRangeOfBomb = true;
+                                }
+                            }
+                            else
+                                MdpMap[x + range, y].InRangeOfBomb = true;
                         }
-                        if (y - range > 1)
+                        if ( (y - range > 1) && (!bombBlockedYMinusDirection) )
                         {
-                            MdpMap[x, y - range].InRangeOfBomb = true;
+                            blockInRange = _gameMap.GetBlockAtLocation(x, y - range);
+                            if (blockInRange.Entity != null)
+                            {
+                                if ((blockInRange.Entity is DestructibleWallEntity) ||
+                                    (blockInRange.Entity is IndestructibleWallEntity) ||
+                                    (blockInRange.Entity is DestructibleWallEntity)/* ||
+                                    (blockInRange.Entity is PlayerEntity)*/)
+                                {
+                                    bombBlockedYMinusDirection = true;
+                                }
+                                else
+                                {
+                                    MdpMap[x, y - range].InRangeOfBomb = true;
+                                }
+                            }
+                            else
+                                MdpMap[x, y - range].InRangeOfBomb = true;
                         }
-                        if (y + range < _gameMap.MapHeight)
+                        if ( (y + range < _gameMap.MapHeight) && (!bombBlockedYPlusDirection) )
                         {
-                            MdpMap[x, y + range].InRangeOfBomb = true;
+                            blockInRange = _gameMap.GetBlockAtLocation(x, y + range);
+                            if (blockInRange.Entity != null)
+                            {
+                                if ((blockInRange.Entity is DestructibleWallEntity) ||
+                                    (blockInRange.Entity is IndestructibleWallEntity) ||
+                                    (blockInRange.Entity is DestructibleWallEntity)/* ||
+                                    (blockInRange.Entity is PlayerEntity)*/)
+                                {
+                                    bombBlockedYPlusDirection = true;
+                                }
+                                else
+                                {
+                                    MdpMap[x, y + range].InRangeOfBomb = true;
+                                }
+                            }
+                            else
+                                MdpMap[x, y + range].InRangeOfBomb = true;
                         }
                     }
                 }
@@ -534,6 +607,13 @@ namespace Reference.Strategies.MDP
             {
                 MdpMap[x, y].Type = MdpTypes.Path;
                 MdpMap[x, y].ItemOnBlockValue = SuperPowerUpValue;
+                MdpMap[x, y].ValidItemOnBlockValue = true;
+            }
+            else if ( (block.Entity is BombBagPowerUpEntity) ||
+                      (block.Entity is BombRaduisPowerUpEntity))
+            {
+                MdpMap[x, y].Type = MdpTypes.Path;
+                MdpMap[x, y].ItemOnBlockValue = PowerUpValue;
                 MdpMap[x, y].ValidItemOnBlockValue = true;
             }
             else
