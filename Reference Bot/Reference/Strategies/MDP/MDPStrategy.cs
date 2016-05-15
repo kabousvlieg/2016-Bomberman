@@ -30,13 +30,13 @@ namespace Reference.Strategies.MDP
 
         private enum MdpTypes
         {
-            Bomb,
-            Me,
+            //Bomb,
+            //Me,
             OtherPlayer,
-            PowerUp,
-            SuperPowerUp,
+            //PowerUp,
+            //SuperPowerUp,
             Indestructable,
-            Wall,
+            //Wall,
             Path,
             PathAsGoal
         }
@@ -46,6 +46,7 @@ namespace Reference.Strategies.MDP
             public MdpTypes type;
             public int value;
             public bool validValue;
+            public int ItemOnBlockValue;
             public bool inRangeOfBomb;
         }
 
