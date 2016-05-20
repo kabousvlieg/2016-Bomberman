@@ -71,6 +71,9 @@
     <Compile Include="Strategies\AStar\PathFinder.cs" />
     <Compile Include="Strategies\IStrategy.cs" />
     <Compile Include="Strategies\MDP\MDPStrategy.cs" />
+    <Compile Include="Strategies\MDP\MdpTools.cs" />
+    <Compile Include="Strategies\MDP\RuleEngine.cs" />
+    <Compile Include="Strategies\MDP\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
