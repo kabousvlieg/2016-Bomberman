@@ -8,7 +8,7 @@ namespace Reference.Strategies.MDP.Tests
 {
     public class TestUtils
     {
-        public static GameMap TestMap(char[][] map)
+        public static GameMap TestMap(char[][] map, int bombRange)
         {
             Assert.IsTrue(map.Length == 21);
             for (var y = 0; y < map.Length; y++)
@@ -24,7 +24,8 @@ namespace Reference.Strategies.MDP.Tests
             {
                 for (var x = 0; x < 21; x++)
                 {
-                    switch (map[x][y])
+                    char key = map[y][x];
+                    switch (key)
                     {
                         case '#':
                             assignIndestructableWall(gm, x, y);
@@ -45,10 +46,10 @@ namespace Reference.Strategies.MDP.Tests
                         case 'B':
                         case 'C':
                         case 'D':
-                            assignPlayer(map, gm, x, y);
+                            assignPlayer(map, gm, x, y, bombRange);
                             break;
                         case '*':
-                            assignBombExplode(gm, x, y);
+                            assignBombExplode(gm, x, y, bombRange);
                             break;
                         case '1':
                         case '2':
@@ -56,7 +57,19 @@ namespace Reference.Strategies.MDP.Tests
                         case '4':
                         case '5':
                         case '6':
-                            assignBombCountdown(map, gm, x, y);
+                        case '7':
+                        case '8':
+                        case '9':
+                        case 'z':
+                        case 'y':
+                        case 'x':
+                        case 'w':
+                        case 'v':
+                        case 'u':
+                        case 't':
+                        case 's':
+                        case 'r':
+                            assignBombCountdown(gm, x, y, key, bombRange);
                             break;
                         default:
                             assignPath(gm, x, y);
@@ -79,51 +92,92 @@ namespace Reference.Strategies.MDP.Tests
             };
         }
 
-        private static void assignBombCountdown(char[][] map, GameMap gm, int x, int y)
+        private static void assignBombCountdown(GameMap gm, int x, int y, char key, int bombRange)
         {
-            gm.GameBlocks[x, y] = new GameBlock()
+            if ((key >= '1') && (key <= '9'))
             {
-                Bomb = new BombEntity()
+                gm.GameBlocks[x, y] = new GameBlock()
                 {
-                    BombRadius = 1,
-                    BombTimer = (int) char.GetNumericValue(map[x][y]),
-                    IsExploding = false,
-                    Points = 0,
-                    Location = new Location()
+                    Bomb = new BombEntity()
                     {
-                        X = x,
-                        Y = y
-                    },
-                    Owner = new PlayerEntity()
-                    {
+                        BombRadius = bombRange,
+                        BombTimer = (int)char.GetNumericValue(key),
+                        IsExploding = false,
+                        Points = 0,
                         Location = new Location()
                         {
-                            X = x+1,
-                            Y = y+1
+                            X = x,
+                            Y = y
                         },
-                        BombBag = 1,
-                        BombRadius = 1,
-                        Key = 'D',
-                        Killed = false,
-                        Name = "Player D",
-                        Points = 1
+                        Owner = new PlayerEntity()
+                        {
+                            Location = new Location()
+                            {
+                                X = x + 1,
+                                Y = y + 1
+                            },
+                            BombBag = 1,
+                            BombRadius = bombRange,
+                            Key = 'D',
+                            Killed = false,
+                            Name = "Player D",
+                            Points = 1
+                        }
+                    },
+                    Location = new Location()
+                    {
+                        X = x + 1,
+                        Y = y + 1
                     }
-                },
-                Location = new Location()
+                };
+            }
+            else if ((key >= 'r') && (key <= 'z'))
+            {
+                key -= 'A'; //Translate from 'r' to '1';
+                gm.GameBlocks[x, y] = new GameBlock()
                 {
-                    X = x+1,
-                    Y = y+1
-                }
-            };
+                    Bomb = new BombEntity()
+                    {
+                        BombRadius = bombRange,
+                        BombTimer = (int)char.GetNumericValue(key),
+                        IsExploding = false,
+                        Points = 0,
+                        Location = new Location()
+                        {
+                            X = x,
+                            Y = y
+                        },
+                        Owner = new PlayerEntity()
+                        {
+                            Location = new Location()
+                            {
+                                X = x + 1,
+                                Y = y + 1
+                            },
+                            BombBag = 1,
+                            BombRadius = bombRange,
+                            Key = 'A',
+                            Killed = false,
+                            Name = "Player A",
+                            Points = 1
+                        }
+                    },
+                    Location = new Location()
+                    {
+                        X = x + 1,
+                        Y = y + 1
+                    }
+                };
+            }
         }
 
-        private static void assignBombExplode(GameMap gm, int x, int y)
+        private static void assignBombExplode(GameMap gm, int x, int y, int bombRange)
         {
             gm.GameBlocks[x, y] = new GameBlock()
             {
                 Bomb = new BombEntity()
                 {
-                    BombRadius = 0,
+                    BombRadius = bombRange,
                     BombTimer = 0,
                     IsExploding = true,
                     Points = 0,
@@ -140,7 +194,7 @@ namespace Reference.Strategies.MDP.Tests
                             Y = y+1
                         },
                         BombBag = 1,
-                        BombRadius = 1,
+                        BombRadius = bombRange,
                         Key = 'D',
                         Killed = false,
                         Name = "Player D",
@@ -155,7 +209,7 @@ namespace Reference.Strategies.MDP.Tests
             };
         }
 
-        private static void assignPlayer(char[][] map, GameMap gm, int x, int y)
+        private static void assignPlayer(char[][] map, GameMap gm, int x, int y, int bombRange)
         {
             gm.GameBlocks[x, y] = new GameBlock()
             {
@@ -167,8 +221,8 @@ namespace Reference.Strategies.MDP.Tests
                         Y = y+1
                     },
                     BombBag = 1,
-                    BombRadius = 1,
-                    Key = map[x][y],
+                    BombRadius = bombRange,
+                    Key = map[y][x],
                     Killed = false,
                     Name = "Player",
                     Points = 1
@@ -269,14 +323,14 @@ namespace Reference.Strategies.MDP.Tests
                 {
                     Location = new Location()
                     {
-                        X = x+1,
-                        Y = y+1
+                        X = x + 1,
+                        Y = y + 1
                     }
                 },
                 Location = new Location()
                 {
-                    X = x+1,
-                    Y = y+1
+                    X = x + 1,
+                    Y = y + 1
                 }
             };
         }

@@ -22,7 +22,7 @@ namespace Reference
                 {
                     playerKey = 'A';
                     outputLocation = Path.Combine(@"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Reference Bot\", playerKey.ToString());
-                    var jsonFileLocation = @"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\237885122\45\state.json";
+                    var jsonFileLocation = @"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Replays\1738320254\4\A\state.json";
                     if ( File.Exists(jsonFileLocation))
                     {
                         inputMap = File.ReadAllText(jsonFileLocation);
@@ -58,6 +58,7 @@ namespace Reference
                 File.WriteAllText(Path.Combine(outputLocation, "move.txt"), ((int)command).ToString());
                 stopwatch.Stop();
                 Debug.WriteLine("[BOT]\tBot finished in {0} ms.", stopwatch.ElapsedMilliseconds);
+                Debug.WriteLine("[BOT]\tBot moved " + command.ToString());
                 if (stopwatch.ElapsedMilliseconds > 2000)
                 {
                     //System.Windows.Forms.MessageBox.Show("Overran time limit " + stopwatch.ElapsedMilliseconds.ToString() + "ms");

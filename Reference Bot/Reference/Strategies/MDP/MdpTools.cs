@@ -14,7 +14,9 @@ namespace Reference.Strategies.MDP
         private readonly int SuperPowerUpValue = 200;
         private readonly int PenaltyValue = 3;
         //private readonly int BombValue = -100;
-        private readonly int PathWhenBombValue = 500;
+        private readonly int PathWhenMyBombValue = 50;
+        private readonly int PathWhenEnemyBombValue = 500;
+
 
         private enum MdpTypes
         {
@@ -29,6 +31,12 @@ namespace Reference.Strategies.MDP
             //PathAsGoal
         }
 
+        private enum BombOwners
+        {
+            Me,
+            Other
+        }
+
         private struct MdpBlock
         {
             public MdpTypes Type;
@@ -36,7 +44,10 @@ namespace Reference.Strategies.MDP
             public bool ValidValue;
             public int ItemOnBlockValue;
             public bool ValidItemOnBlockValue;
-            public bool InRangeOfBomb;
+            public bool InRangeOfMyBomb;
+            public bool InRangeOfEnemyBomb;
+            public BombOwners BombOwner;
+            public int BombCountDown;
         }
 
         private MdpBlock[,] _mdpMap;
@@ -77,14 +88,19 @@ namespace Reference.Strategies.MDP
                         }
                     }
                     if (block.Bomb == null) continue;
-                    CalculateRangeOfBomb(x, y, block);
+                    var myBomb = block.Bomb.Owner.Key == _playerKey;
+                    CalculateRangeOfBomb(x, y, block, myBomb);
                 }
             }
         }
 
-        private void CalculateRangeOfBomb(int x, int y, GameBlock block)
+        private void CalculateRangeOfBomb(int x, int y, GameBlock block, bool myBomb)
         {
-            _mdpMap[x, y].InRangeOfBomb = true;
+            if (myBomb)
+                _mdpMap[x, y].InRangeOfMyBomb = true;
+            else
+                _mdpMap[x, y].InRangeOfEnemyBomb = true;
+
             bool bombBlockedXMinusDirection = false;
             bool bombBlockedXPlusDirection = false;
             bool bombBlockedYMinusDirection = false;
@@ -95,30 +111,30 @@ namespace Reference.Strategies.MDP
                 {
                     var xrange = x - range;
                     var yrange = y;
-                    bombBlockedXMinusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedXMinusDirection);
+                    bombBlockedXMinusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedXMinusDirection, myBomb);
                 }
                 if ((x + range < _gameMap.MapWidth) && (!bombBlockedXPlusDirection))
                 {
                     var xrange = x + range;
                     var yrange = y;
-                    bombBlockedXPlusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedXMinusDirection);
+                    bombBlockedXPlusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedXMinusDirection, myBomb);
                 }
                 if ((y - range > 1) && (!bombBlockedYMinusDirection))
                 {
                     var xrange = x;
                     var yrange = y - range;
-                    bombBlockedXPlusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedXMinusDirection);
+                    bombBlockedXPlusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedXMinusDirection, myBomb);
                 }
                 if ((y + range < _gameMap.MapHeight) && (!bombBlockedYPlusDirection))
                 {
                     var xrange = x;
                     var yrange = y + range;
-                    bombBlockedXPlusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedXMinusDirection);
+                    bombBlockedXPlusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedXMinusDirection, myBomb);
                 }
             }
         }
 
-        private bool MarkUnlessBombBlocked(int xrange, int yrange, bool bombBlockedXMinusDirection)
+        private bool MarkUnlessBombBlocked(int xrange, int yrange, bool bombBlockedXMinusDirection, bool myBomb)
         {
             GameBlock blockInRange;
             blockInRange = _gameMap.GetBlockAtLocation(xrange, yrange);
@@ -133,11 +149,19 @@ namespace Reference.Strategies.MDP
                 }
                 else
                 {
-                    _mdpMap[xrange, yrange].InRangeOfBomb = true;
+                    if (myBomb)
+                        _mdpMap[xrange, yrange].InRangeOfMyBomb = true;
+                    else
+                        _mdpMap[xrange, yrange].InRangeOfEnemyBomb = true;
                 }
             }
             else
-                _mdpMap[xrange, yrange].InRangeOfBomb = true;
+            {
+                if (myBomb)
+                    _mdpMap[xrange, yrange].InRangeOfMyBomb = true;
+                else
+                    _mdpMap[xrange, yrange].InRangeOfEnemyBomb = true;
+            }
             return bombBlockedXMinusDirection;
         }
         #endregion
@@ -154,7 +178,8 @@ namespace Reference.Strategies.MDP
                     _mdpMap[x, y].Value = Int32.MinValue;
                     _mdpMap[x, y].ValidItemOnBlockValue = false;
                     _mdpMap[x, y].ItemOnBlockValue = Int32.MinValue;
-                    if (_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfBomb)
+                    if ((_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfMyBomb) ||
+                        (_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfEnemyBomb))
                         AssignBlockEntityValuesForEscape(_mdpMap, block, x, y);
                     else
                         AssignBlockEntityValues(_mdpMap, block, x, y);
@@ -248,11 +273,17 @@ namespace Reference.Strategies.MDP
                 }
             }
             
-            if (!mdpMap[x, y].InRangeOfBomb)
+            if (!mdpMap[x, y].InRangeOfMyBomb)
             {
                 mdpMap[x, y].Type = MdpTypes.Path;
                 mdpMap[x, y].ValidItemOnBlockValue = true;
-                mdpMap[x, y].ItemOnBlockValue = PathWhenBombValue;
+                mdpMap[x, y].ItemOnBlockValue = PathWhenMyBombValue;
+            }
+            else if (!mdpMap[x, y].InRangeOfEnemyBomb)
+            {
+                mdpMap[x, y].Type = MdpTypes.Path;
+                mdpMap[x, y].ValidItemOnBlockValue = true;
+                mdpMap[x, y].ItemOnBlockValue = PathWhenEnemyBombValue;
             }
             else
             {
@@ -301,11 +332,12 @@ namespace Reference.Strategies.MDP
                 _mdpMap[xoffset, yoffset].Type == MdpTypes.Path &&
                 _mdpMap[xoffset, yoffset].Value > largestMdpValue)
             {
-                if (_mdpMap[xoffset, yoffset].InRangeOfBomb &&
-                    !_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfBomb)
+                if (_mdpMap[xoffset, yoffset].InRangeOfEnemyBomb &&
+                    !_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfEnemyBomb)
                 {
                     //can't go that way...
                 }
+                //Todo what about my bombs
                 else
                 {
                     largestMdpValue = _mdpMap[xoffset, yoffset].Value;
@@ -472,8 +504,10 @@ namespace Reference.Strategies.MDP
                             Debug.Write(printSign ? "!!" : "!");
                         else if (_mdpMap[x, y].ItemOnBlockValue == SuperPowerUpValue)
                             Debug.Write(printSign ? "$$" : "$");
-                        else if (_mdpMap[x, y].ItemOnBlockValue == PathWhenBombValue)
+                        else if (_mdpMap[x, y].ItemOnBlockValue == PathWhenMyBombValue)
                             Debug.Write(printSign ? ".." : ".");
+                        else if (_mdpMap[x, y].ItemOnBlockValue == PathWhenEnemyBombValue)
+                            Debug.Write(printSign ? ",," : ",");
                         else if (_mdpMap[x, y].ItemOnBlockValue == WallValue)
                             Debug.Write(printSign ? "++" : "+");
                     }
@@ -500,7 +534,8 @@ namespace Reference.Strategies.MDP
 
         public bool areWeInRangeOfBomb()
         {
-            return _mdpMap[_player.Location.X, _player.Location.Y].InRangeOfBomb;
+            return (_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfMyBomb ||
+                    _mdpMap[_player.Location.X, _player.Location.Y].InRangeOfEnemyBomb);
         }
     }
 }
