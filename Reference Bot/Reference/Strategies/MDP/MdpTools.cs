@@ -13,9 +13,9 @@ namespace Reference.Strategies.MDP
         private readonly int PowerUpValue = 100;
         private readonly int SuperPowerUpValue = 200;
         private readonly int PenaltyValue = 3;
+        private readonly int EnemyBombPenalty = 50;
         //private readonly int BombValue = -100;
-        private readonly int PathWhenMyBombValue = 50;
-        private readonly int PathWhenEnemyBombValue = 500;
+        private readonly int PathWhenBombValue = 500;
 
 
         private enum MdpTypes
@@ -123,13 +123,13 @@ namespace Reference.Strategies.MDP
                 {
                     var xrange = x;
                     var yrange = y - range;
-                    bombBlockedXPlusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedXMinusDirection, myBomb);
+                    bombBlockedYMinusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedXMinusDirection, myBomb);
                 }
                 if ((y + range < _gameMap.MapHeight) && (!bombBlockedYPlusDirection))
                 {
                     var xrange = x;
                     var yrange = y + range;
-                    bombBlockedXPlusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedXMinusDirection, myBomb);
+                    bombBlockedYPlusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedXMinusDirection, myBomb);
                 }
             }
         }
@@ -273,17 +273,11 @@ namespace Reference.Strategies.MDP
                 }
             }
             
-            if (!mdpMap[x, y].InRangeOfMyBomb)
+            if ((!mdpMap[x, y].InRangeOfMyBomb) && (!mdpMap[x, y].InRangeOfEnemyBomb))
             {
                 mdpMap[x, y].Type = MdpTypes.Path;
                 mdpMap[x, y].ValidItemOnBlockValue = true;
-                mdpMap[x, y].ItemOnBlockValue = PathWhenMyBombValue;
-            }
-            else if (!mdpMap[x, y].InRangeOfEnemyBomb)
-            {
-                mdpMap[x, y].Type = MdpTypes.Path;
-                mdpMap[x, y].ValidItemOnBlockValue = true;
-                mdpMap[x, y].ItemOnBlockValue = PathWhenEnemyBombValue;
+                mdpMap[x, y].ItemOnBlockValue = PathWhenBombValue;
             }
             else
             {
@@ -337,7 +331,12 @@ namespace Reference.Strategies.MDP
                 {
                     //can't go that way...
                 }
-                //Todo what about my bombs
+                else if (_mdpMap[xoffset, yoffset].InRangeOfMyBomb &&
+                    !_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfMyBomb)
+                {
+                    //can't go that way...
+                    //TODO can improve this if we can determine it is safe to step into a blast zone
+                }
                 else
                 {
                     largestMdpValue = _mdpMap[xoffset, yoffset].Value;
@@ -396,7 +395,10 @@ namespace Reference.Strategies.MDP
                     }
                     else
                     {
-                        calculatedValue = largestNeighbour - PenaltyValue;
+                        if (_mdpMap[x, y].InRangeOfEnemyBomb)
+                            calculatedValue = largestNeighbour - EnemyBombPenalty;
+                        else
+                            calculatedValue = largestNeighbour - PenaltyValue;
                         if (Math.Abs(calculatedValue - _mdpMap[x, y].Value) > 10)
                             stillNotDone = true;
                         _mdpMap[x, y].Value = calculatedValue;
@@ -405,7 +407,10 @@ namespace Reference.Strategies.MDP
                 }
                 else
                 {
-                    calculatedValue = largestNeighbour - PenaltyValue;
+                    if (_mdpMap[x, y].InRangeOfEnemyBomb)
+                        calculatedValue = largestNeighbour - EnemyBombPenalty;
+                    else
+                        calculatedValue = largestNeighbour - PenaltyValue;
                     if (Math.Abs(calculatedValue - _mdpMap[x, y].Value) > 10)
                         stillNotDone = true;
                     _mdpMap[x, y].Value = calculatedValue;
@@ -472,7 +477,8 @@ namespace Reference.Strategies.MDP
         private void DrawMdpMap(bool printSign = false)
         {
             //Scale output to biggest value
-            var largestValue = 1;
+            var largestValue = int.MinValue;
+            var smallestValue = int.MaxValue;
             for (var y = 1; y <= _gameMap.MapHeight; y++)
             {
                 for (var x = 1; x <= _gameMap.MapWidth; x++)
@@ -482,6 +488,12 @@ namespace Reference.Strategies.MDP
                         (Math.Abs(_mdpMap[x, y].Value) > largestValue))
                     {
                         largestValue = Math.Abs(_mdpMap[x, y].Value);
+                    }
+                    if ((_mdpMap[x, y].ValidValue) &&
+                        (_mdpMap[x, y].Type == MdpTypes.Path) &&
+                        (Math.Abs(_mdpMap[x, y].Value) < smallestValue))
+                    {
+                        smallestValue = Math.Abs(_mdpMap[x, y].Value);
                     }
                 }
             }
@@ -504,10 +516,8 @@ namespace Reference.Strategies.MDP
                             Debug.Write(printSign ? "!!" : "!");
                         else if (_mdpMap[x, y].ItemOnBlockValue == SuperPowerUpValue)
                             Debug.Write(printSign ? "$$" : "$");
-                        else if (_mdpMap[x, y].ItemOnBlockValue == PathWhenMyBombValue)
+                        else if (_mdpMap[x, y].ItemOnBlockValue == PathWhenBombValue)
                             Debug.Write(printSign ? ".." : ".");
-                        else if (_mdpMap[x, y].ItemOnBlockValue == PathWhenEnemyBombValue)
-                            Debug.Write(printSign ? ",," : ",");
                         else if (_mdpMap[x, y].ItemOnBlockValue == WallValue)
                             Debug.Write(printSign ? "++" : "+");
                     }
@@ -520,7 +530,9 @@ namespace Reference.Strategies.MDP
                             //Console.ForegroundColor = _mdpMap[x, y].value > 0 ? ConsoleColor.Red : ConsoleColor.Yellow;
                             if (printSign)
                                 Debug.Write(_mdpMap[x, y].Value > 0 ? "-" : "=");
-                            Debug.Write(((int)(Math.Abs(_mdpMap[x, y].Value) * 9 / largestValue)).ToString());
+                            var largestDiff = Math.Abs(largestValue) - Math.Abs(smallestValue);
+                            var thisValueOverSmallest = Math.Abs(_mdpMap[x, y].Value) - Math.Abs(smallestValue);
+                            Debug.Write(((int)(Math.Abs(thisValueOverSmallest) * 9 / Math.Abs(largestDiff))).ToString());
                             //Console.ForegroundColor = ConsoleColor.White;
                         }
                         else
