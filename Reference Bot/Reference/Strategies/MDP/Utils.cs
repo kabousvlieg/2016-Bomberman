@@ -50,7 +50,7 @@ namespace Reference.Strategies.MDP
             Debug.WriteLine(" 1234567890123456789012");
             for (var y = 1; y <= _gameMap.MapHeight; y++)
             {
-                Debug.Write(y % 9);
+                Debug.Write(y % 10);
                 for (var x = 1; x <= _gameMap.MapWidth; x++)
                 {
                     var block = _gameMap.GetBlockAtLocation(x, y);
