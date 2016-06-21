@@ -25,7 +25,7 @@ namespace Reference.Strategies.MDP
             var ruleEngine = new RuleEngine(gameMap, player);
                        
             utils.DrawMap();
-            mdp.assignBombValues();
+            while (!mdp.AssignBombValues()) {} //while not done
             mdp.AssignMdpGoals(); 
             mdp.CalculateMdp();
             var bestMove = mdp.CalculateBestMoveFromMdp();

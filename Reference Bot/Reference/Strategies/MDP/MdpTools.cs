@@ -64,8 +64,9 @@ namespace Reference.Strategies.MDP
         }
 
         #region bombs
-        public void assignBombValues()
+        public bool AssignBombValues()
         {
+            var done = true;
             //Enemy bombs
             for (var y = 1; y <= _gameMap.MapHeight; y++)
             {
@@ -91,7 +92,7 @@ namespace Reference.Strategies.MDP
                     if (block.Bomb == null) continue;
                     var myBomb = block.Bomb.Owner.Key == _playerKey;
                     if (!myBomb)
-                        CalculateRangeOfBomb(x, y, block, myBomb);
+                        CalculateRangeOfBomb(x, y, block, myBomb, ref done);
                 }
             }
 
@@ -121,14 +122,15 @@ namespace Reference.Strategies.MDP
                     var myBomb = block.Bomb.Owner.Key == _playerKey;
                     if (!myBomb) continue;
                     if (_mdpMap[x, y].InRangeOfEnemyBomb) //My bomb is part of an enemy bomb chain
-                        CalculateRangeOfBomb(x, y, block, false);
+                        CalculateRangeOfBomb(x, y, block, false, ref done);
                     else
-                        CalculateRangeOfBomb(x, y, block, true);
+                        CalculateRangeOfBomb(x, y, block, true, ref done);
                 }
             }
+            return done;
         }
 
-        private void CalculateRangeOfBomb(int x, int y, GameBlock block, bool myBomb)
+        private void CalculateRangeOfBomb(int x, int y, GameBlock block, bool myBomb, ref bool done)
         {
             if (myBomb)
                 _mdpMap[x, y].InRangeOfMyBomb = true;
@@ -139,36 +141,47 @@ namespace Reference.Strategies.MDP
             var bombBlockedXPlusDirection = false;
             var bombBlockedYMinusDirection = false;
             var bombBlockedYPlusDirection = false;
+            var bombTimer = block.Bomb.BombTimer;
+            if (_mdpMap[x, y].BombCountDown < block.Bomb.BombTimer)
+                bombTimer = _mdpMap[x, y].BombCountDown;
             for (int range = 1; range <= block.Bomb.BombRadius; range++)
             {
                 if ((x - range > 1) && (!bombBlockedXMinusDirection))
                 {
                     var xrange = x - range;
                     var yrange = y;
-                    bombBlockedXMinusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedXMinusDirection, myBomb, block.Bomb.BombTimer);
+                    bombBlockedXMinusDirection = MarkUnlessBombBlocked(xrange, yrange, 
+                                                                       bombBlockedXMinusDirection, myBomb,
+                                                                       bombTimer, ref done);
                 }
                 if ((x + range < _gameMap.MapWidth) && (!bombBlockedXPlusDirection))
                 {
                     var xrange = x + range;
                     var yrange = y;
-                    bombBlockedXPlusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedXPlusDirection, myBomb, block.Bomb.BombTimer);
+                    bombBlockedXPlusDirection = MarkUnlessBombBlocked(xrange, yrange, 
+                                                                      bombBlockedXPlusDirection, myBomb,
+                                                                      bombTimer, ref done);
                 }
                 if ((y - range > 1) && (!bombBlockedYMinusDirection))
                 {
                     var xrange = x;
                     var yrange = y - range;
-                    bombBlockedYMinusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedYMinusDirection, myBomb, block.Bomb.BombTimer);
+                    bombBlockedYMinusDirection = MarkUnlessBombBlocked(xrange, yrange, 
+                                                                       bombBlockedYMinusDirection, myBomb,
+                                                                       bombTimer, ref done);
                 }
                 if ((y + range < _gameMap.MapHeight) && (!bombBlockedYPlusDirection))
                 {
                     var xrange = x;
                     var yrange = y + range;
-                    bombBlockedYPlusDirection = MarkUnlessBombBlocked(xrange, yrange, bombBlockedYPlusDirection, myBomb, block.Bomb.BombTimer);
+                    bombBlockedYPlusDirection = MarkUnlessBombBlocked(xrange, yrange, 
+                                                                      bombBlockedYPlusDirection, myBomb,
+                                                                      bombTimer, ref done);
                 }
             }
         }
 
-        private bool MarkUnlessBombBlocked(int xrange, int yrange, bool bombBlockedDirection, bool myBomb, int bombTimer)
+        private bool MarkUnlessBombBlocked(int xrange, int yrange, bool bombBlockedDirection, bool myBomb, int bombTimer, ref bool done)
         {
             GameBlock blockInRange;
             blockInRange = _gameMap.GetBlockAtLocation(xrange, yrange);
@@ -189,7 +202,10 @@ namespace Reference.Strategies.MDP
                         _mdpMap[xrange, yrange].InRangeOfEnemyBomb = true;
 
                     if (_mdpMap[xrange, yrange].BombCountDown > bombTimer)
+                    {
                         _mdpMap[xrange, yrange].BombCountDown = bombTimer;
+                        done = false;
+                    }
                 }
             }
             else
@@ -200,7 +216,10 @@ namespace Reference.Strategies.MDP
                     _mdpMap[xrange, yrange].InRangeOfEnemyBomb = true;
 
                 if (_mdpMap[xrange, yrange].BombCountDown > bombTimer)
+                {
                     _mdpMap[xrange, yrange].BombCountDown = bombTimer;
+                    done = false;
+                }
             }
             return bombBlockedDirection;
         }

@@ -212,6 +212,39 @@ namespace Reference.Strategies.MDP.Tests
         }
 
         [TestMethod()]
+        public void EnemyBombChainNoGo()
+        {
+            var charMap = new char[][]
+            {
+                "#####################".ToCharArray(),
+                "#A  r               #".ToCharArray(),
+                "# #                 #".ToCharArray(),
+                "#r#                 #".ToCharArray(),
+                "# # 9               #".ToCharArray(),
+                "# #                 #".ToCharArray(),
+                "# #                 #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#####################".ToCharArray()
+            };
+            var map = TestUtils.TestMap(charMap, 4);
+            var gameStrategy = new MdpStrategy();
+            var command = gameStrategy.ExecuteStrategy(map, 'A');
+            Assert.IsTrue(command == Commands.GameCommand.MoveDown);
+        }
+
+        [TestMethod()]
         public void BombChainZerosMyBombsTimer()
         {
             var charMap = new char[][]
@@ -220,7 +253,7 @@ namespace Reference.Strategies.MDP.Tests
                 "#A  z               #".ToCharArray(),
                 "# #                 #".ToCharArray(),
                 "#z#                 #".ToCharArray(),
-                "# # 4               #".ToCharArray(),
+                "# # r               #".ToCharArray(),
                 "# #                 #".ToCharArray(),
                 "# #                 #".ToCharArray(),
                 "#                   #".ToCharArray(),
