@@ -278,7 +278,7 @@ namespace Reference.Strategies.MDP.Tests
         }
 
         [TestMethod()]
-        public void Gotcha1()
+        public void Gotcha1_MoveOverBombWhenDangerClose()
         {
             var charMap = new char[][]
             {
@@ -304,10 +304,109 @@ namespace Reference.Strategies.MDP.Tests
                 "#     ++     ++     #".ToCharArray(),
                 "#####################".ToCharArray()
             };
-            var map = TestUtils.TestMap(charMap, 4);
+            var map = TestUtils.TestMap(charMap, 9);
             var gameStrategy = new MdpStrategy();
             var command = gameStrategy.ExecuteStrategy(map, 'A');
             Assert.IsTrue(command == Commands.GameCommand.MoveRight);
+        }
+
+        [TestMethod()]
+        public void Gotcha4_CalculateIfSafeDistanceCanBeReached()
+        {
+            var charMap = new char[][]
+            {
+                "#####################".ToCharArray(),
+                "#             +     #".ToCharArray(),
+                "# # # # # # #+# # # #".ToCharArray(),
+                "#                  +#".ToCharArray(),
+                "#+# # # # # # # # #+#".ToCharArray(),
+                "#                 + #".ToCharArray(),
+                "# # # # # # # # #+# #".ToCharArray(),
+                "#              *A3  #".ToCharArray(),
+                "# # # # # # # #*# # #".ToCharArray(),
+                "# +            *+ + #".ToCharArray(),
+                "# # # # #   # #*#+#+#".ToCharArray(),
+                "#              *+ + #".ToCharArray(),
+                "# # # # # # # #*# # #".ToCharArray(),
+                "#   +          *++  #".ToCharArray(),
+                "# # # # # # # # #&# #".ToCharArray(),
+                "#               D   #".ToCharArray(),
+                "# # # # # # # # # #+#".ToCharArray(),
+                "#    +  + + +       #".ToCharArray(),
+                "# # # #+# # #+# # # #".ToCharArray(),
+                "#     ++     ++     #".ToCharArray(),
+                "#####################".ToCharArray()
+            };
+            var map = TestUtils.TestMap(charMap, 9);
+            var gameStrategy = new MdpStrategy();
+            var command = gameStrategy.ExecuteStrategy(map, 'A');
+            Assert.IsTrue(command == Commands.GameCommand.DoNothing);
+        }
+
+        [TestMethod()]
+        public void Gotcha2_DontPlantABomb()
+        {
+            var charMap = new char[][]
+            {
+                "#####################".ToCharArray(),
+                "#      ++   ++ ++   #".ToCharArray(),
+                "# # # # # # # #+# # #".ToCharArray(),
+                "#          +        #".ToCharArray(),
+                "# # # # # # # # # # #".ToCharArray(),
+                "#      + + + +  +   #".ToCharArray(),
+                "# # # # # # # # # # #".ToCharArray(),
+                "#4+    +  +  + +D   #".ToCharArray(),
+                "# #+# # #+#+# # #+# #".ToCharArray(),
+                "# A+ + +++++++ + +  #".ToCharArray(),
+                "# #+#+#+#+$+#+#+#+# #".ToCharArray(),
+                "#  + + +++++++ + +  #".ToCharArray(),
+                "# #+# # #+#+# # #+# #".ToCharArray(),
+                "#C++ + +  +  +   ++ #".ToCharArray(),
+                "# # # # # # #6# # # #".ToCharArray(),
+                "#   +  + + + B      #".ToCharArray(),
+                "# #+# # # # # # # # #".ToCharArray(),
+                "#  !     + +        #".ToCharArray(),
+                "# # #+# # # # #+# # #".ToCharArray(),
+                "#   ++ ++   ++ ++   #".ToCharArray(),
+                "#####################".ToCharArray(),
+            };
+            var map = TestUtils.TestMap(charMap, 4);
+            var gameStrategy = new MdpStrategy();
+            var command = gameStrategy.ExecuteStrategy(map, 'A');
+            Assert.IsTrue(command == Commands.GameCommand.DoNothing);
+        }
+
+        [TestMethod()]
+        public void Gotcha3_DontBlockYourselfIn()
+        {
+            var charMap = new char[][]
+            {
+                "#####################".ToCharArray(),
+                "#      ++   ++ ++   #".ToCharArray(),
+                "# # # # # # # #+# # #".ToCharArray(),
+                "#          +        #".ToCharArray(),
+                "# # # # # # # # # # #".ToCharArray(),
+                "#      + + + +  +   #".ToCharArray(),
+                "# # # # # # # # # # #".ToCharArray(),
+                "#4+    +  +  + +D   #".ToCharArray(),
+                "# #+# # #+#+# # #+# #".ToCharArray(),
+                "#A + + +++++++ + +  #".ToCharArray(),
+                "# #+#+#+#+$+#+#+#+# #".ToCharArray(),
+                "#  + + +++++++ + +  #".ToCharArray(),
+                "# #+# # #+#+# # #+# #".ToCharArray(),
+                "#C++ + +  +  +   ++ #".ToCharArray(),
+                "# # # # # # #6# # # #".ToCharArray(),
+                "#   +  + + + B      #".ToCharArray(),
+                "# #+# # # # # # # # #".ToCharArray(),
+                "#  !     + +        #".ToCharArray(),
+                "# # #+# # # # #+# # #".ToCharArray(),
+                "#   ++ ++   ++ ++   #".ToCharArray(),
+                "#####################".ToCharArray(),
+            };
+            var map = TestUtils.TestMap(charMap, 4);
+            var gameStrategy = new MdpStrategy();
+            var command = gameStrategy.ExecuteStrategy(map, 'A');
+            Assert.IsTrue(command == Commands.GameCommand.MoveDown);
         }
     }
 }
