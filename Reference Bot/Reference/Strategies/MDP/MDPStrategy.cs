@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using Newtonsoft.Json;
+﻿using System.Diagnostics;
 using Reference.Commands;
-using Reference.Domain;
 using Reference.Domain.Map;
-using Reference.Domain.Map.Entities;
-using Reference.Domain.Map.Entities.PowerUps;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Reference.Strategies.MDP
 {
@@ -23,14 +13,21 @@ namespace Reference.Strategies.MDP
             var player = utils.getPlayer();
             var mdp = new MdpTools(gameMap, playerKey, player);
             var ruleEngine = new RuleEngine(gameMap, player);
-                       
+#if (DEBUG)
+            var stopwatch = Stopwatch.StartNew();
+#endif
+
             utils.DrawMap();
             while (!mdp.AssignBombValues()) {} //while not done
             mdp.AssignMdpGoals(); 
             mdp.CalculateMdp();
             var bestMove = mdp.CalculateBestMoveFromMdp();
             if (!mdp.areWeInRangeOfBomb())
-                bestMove = ruleEngine.OverrideMdpMoveWithRuleEngine(bestMove);
+                bestMove = ruleEngine.OverrideMdpMoveWithRuleEngine(bestMove, mdp);
+#if (DEBUG)
+            if ((stopwatch.ElapsedMilliseconds > 2000))
+                Assert.Fail("Code overran time of 2 seconds");
+#endif
             return bestMove;
         }
     }

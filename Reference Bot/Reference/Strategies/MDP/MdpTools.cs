@@ -18,7 +18,7 @@ namespace Reference.Strategies.MDP
         private readonly int PathWhenBombValue = 500;
 
 
-        private enum MdpTypes
+        public enum MdpTypes
         {
             //Bomb,
             //Me,
@@ -31,7 +31,7 @@ namespace Reference.Strategies.MDP
             //PathAsGoal
         }
 
-        private struct MdpBlock
+        public struct MdpBlock
         {
             public MdpTypes Type;
             public int Value;
@@ -43,7 +43,7 @@ namespace Reference.Strategies.MDP
             public int BombCountDown;
         }
 
-        private MdpBlock[,] _mdpMap;
+        public MdpBlock[,] _mdpMap;
         private GameMap _gameMap;
         private char _playerKey;
         private PlayerEntity _player;
@@ -239,14 +239,14 @@ namespace Reference.Strategies.MDP
                     _mdpMap[x, y].ItemOnBlockValue = Int32.MinValue;
                     if ((_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfMyBomb) ||
                         (_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfEnemyBomb))
-                        AssignBlockEntityValuesForEscape(_mdpMap, block, x, y);
+                        AssignBlockEntityValues(_mdpMap, block, x, y, true);
                     else
-                        AssignBlockEntityValues(_mdpMap, block, x, y);
+                        AssignBlockEntityValues(_mdpMap, block, x, y, false);
                 }
             }
         }
 
-        private void AssignBlockEntityValues(MdpBlock[,] MdpMap, GameBlock block, int x, int y)
+        private void AssignBlockEntityValues(MdpBlock[,] MdpMap, GameBlock block, int x, int y, bool escape)
         {
             if ((block.Entity == null) &&
                 (block.PowerUp == null))
@@ -257,14 +257,30 @@ namespace Reference.Strategies.MDP
             {
                 if (block.Entity is DestructibleWallEntity)
                 {
-                    MdpMap[x, y].Type = MdpTypes.Path;
-                    MdpMap[x, y].ItemOnBlockValue = WallValue;
-                    MdpMap[x, y].ValidItemOnBlockValue = true;
+                    if (escape)
+                    {
+                        MdpMap[x, y].Type = MdpTypes.Indestructable;
+                        return;
+                    }
+                    else
+                    {
+                        MdpMap[x, y].Type = MdpTypes.Path;
+                        MdpMap[x, y].ItemOnBlockValue = WallValue;
+                        MdpMap[x, y].ValidItemOnBlockValue = true;
+                    }                   
                 }
                 else if (block.Entity is IndestructibleWallEntity)
                 {
-                    MdpMap[x, y].Type = MdpTypes.Indestructable;
-                }
+                    if (escape)
+                    {
+                        MdpMap[x, y].Type = MdpTypes.Indestructable;
+                        return;
+                    }
+                    else
+                    {
+                        MdpMap[x, y].Type = MdpTypes.Indestructable;
+                    }
+                }                   
                 else if (block.Entity is BombEntity)
                 {
                     MdpMap[x, y].Type = MdpTypes.Path;
@@ -313,34 +329,18 @@ namespace Reference.Strategies.MDP
                     MdpMap[x, y].ValidItemOnBlockValue = true;
                 }
             }
-        }
-
-        private void AssignBlockEntityValuesForEscape(MdpBlock[,] mdpMap, GameBlock block, int x, int y)
-        {
-            //TODO More advanced pathing in bomb zone, especially if the bomb is ours
-            if (block.Entity != null)
+            if (escape)
             {
-                if (block.Entity is DestructibleWallEntity)
+                if ((!MdpMap[x, y].InRangeOfMyBomb) && (!MdpMap[x, y].InRangeOfEnemyBomb))
                 {
-                    mdpMap[x, y].Type = MdpTypes.Indestructable;
-                    return;
+                    MdpMap[x, y].Type = MdpTypes.Path;
+                    MdpMap[x, y].ValidItemOnBlockValue = true;
+                    MdpMap[x, y].ItemOnBlockValue += PathWhenBombValue;
                 }
-                else if (block.Entity is IndestructibleWallEntity)
+                else
                 {
-                    mdpMap[x, y].Type = MdpTypes.Indestructable;
-                    return;
+                    MdpMap[x, y].Type = MdpTypes.Path;
                 }
-            }
-            
-            if ((!mdpMap[x, y].InRangeOfMyBomb) && (!mdpMap[x, y].InRangeOfEnemyBomb))
-            {
-                mdpMap[x, y].Type = MdpTypes.Path;
-                mdpMap[x, y].ValidItemOnBlockValue = true;
-                mdpMap[x, y].ItemOnBlockValue = PathWhenBombValue;
-            }
-            else
-            {
-                mdpMap[x, y].Type = MdpTypes.Path;
             }
         }
         #endregion

@@ -15,60 +15,113 @@ namespace Reference.Strategies.MDP
             _gameMap = gameMap;
         }
 
-        public GameCommand OverrideMdpMoveWithRuleEngine(GameCommand bestMdpMove)
-        {
-            
+        public GameCommand OverrideMdpMoveWithRuleEngine(GameCommand bestMdpMove, MdpTools mdp)
+        {            
             //Check for survival
             //Will our bestMdpMove move into explosion
             //Will our bestMdpMove move into range of bomb
 
             //Check if we can blow up the enemy
             //Check if we can plant a bomb
-            if (CanWePlantABomb())
+            if (CanWePlantABomb(mdp))
                 return GameCommand.PlaceBomb;
+            if (CanWeBlowABomb())
+                return GameCommand.TriggerBomb;
             return bestMdpMove;
         }
 
-        private bool CanWePlantABomb()
+        private bool CanWeBlowABomb()
+        {
+            for (var y = 1; y <= _gameMap.MapHeight; y++)
+            {
+                for (var x = 1; x <= _gameMap.MapWidth; x++)
+                {
+                    var block = _gameMap.GetBlockAtLocation(x, y);
+                    if (block.Bomb?.Owner.Key == _player.Key)
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        private bool CanWePlantABomb(MdpTools mdp)
         {
             if (_player.BombBag == 0)
                 return false;
-            GameBlock block;
-            if (_player.Location.X > 1)
+
+            var bombBlockedXMinusDirection = false;
+            var bombBlockedXPlusDirection = false;
+            var bombBlockedYMinusDirection = false;
+            var bombBlockedYPlusDirection = false;
+            for (int range = 1; range <= _player.BombRadius; range++)
             {
-                block = _gameMap.GetBlockAtLocation(_player.Location.X - 1, _player.Location.Y);
-                if (block.Entity != null)
+                if ((_player.Location.X - range > 1) && (!bombBlockedXMinusDirection))
                 {
-                    if (block.Entity is DestructibleWallEntity)
+                    var xrange = _player.Location.X - range;
+                    var yrange = _player.Location.Y;
+                    if (PlantBombUnlessBombBlocked(xrange, yrange,
+                                                   ref bombBlockedXMinusDirection,
+                                                   mdp))
+                    {
                         return true;
+                    }
+
+                }
+                if ((_player.Location.X + range < _gameMap.MapWidth) && (!bombBlockedXPlusDirection))
+                {
+                    var xrange = _player.Location.X + range;
+                    var yrange = _player.Location.Y;
+                    if (PlantBombUnlessBombBlocked(xrange, yrange,
+                                                   ref bombBlockedXPlusDirection,
+                                                   mdp))
+                    {
+                        return true;
+                    }
+                }
+                if ((_player.Location.Y - range > 1) && (!bombBlockedYMinusDirection))
+                {
+                    var xrange = _player.Location.X;
+                    var yrange = _player.Location.Y - range;
+                    if (PlantBombUnlessBombBlocked(xrange, yrange,
+                                                   ref bombBlockedYMinusDirection,
+                                                   mdp))
+                    {
+                        return true;
+                    }
+                }
+                if ((_player.Location.Y + range < _gameMap.MapHeight) && (!bombBlockedYPlusDirection))
+                {
+                    var xrange = _player.Location.X;
+                    var yrange = _player.Location.Y + range;
+                    if (PlantBombUnlessBombBlocked(xrange, yrange,
+                                                   ref bombBlockedYPlusDirection,
+                                                   mdp))
+                    {
+                        return true;
+                    }
                 }
             }
-            if (_player.Location.X < _gameMap.MapWidth)
+            return false;
+        }
+
+        private bool PlantBombUnlessBombBlocked(int xrange, int yrange, ref bool bombBlockedDirection, MdpTools mdp)
+        {
+            GameBlock blockInRange;
+            MdpTools.MdpBlock mdpBlockInRange;
+            blockInRange = _gameMap.GetBlockAtLocation(xrange, yrange);
+            mdpBlockInRange = mdp._mdpMap[xrange, yrange];
+            if (blockInRange.Entity == null) return false;
+            if (blockInRange.Entity is IndestructibleWallEntity)
             {
-                block = _gameMap.GetBlockAtLocation(_player.Location.X + 1, _player.Location.Y);
-                if (block.Entity != null)
-                {
-                    if (block.Entity is DestructibleWallEntity)
-                        return true;
-                }
+                bombBlockedDirection = true;
+                return false;
             }
-            if (_player.Location.Y > 1)
+            else
             {
-                block = _gameMap.GetBlockAtLocation(_player.Location.X, _player.Location.Y - 1);
-                if (block.Entity != null)
-                {
-                    if (block.Entity is DestructibleWallEntity)
-                        return true;
-                }
-            }
-            if (_player.Location.Y < _gameMap.MapHeight)
-            {
-                block = _gameMap.GetBlockAtLocation(_player.Location.X, _player.Location.Y + 1);
-                if (block.Entity != null)
-                {
-                    if (block.Entity is DestructibleWallEntity)
-                        return true;
-                }
+                if ((blockInRange.Entity is DestructibleWallEntity) &&
+                    (!mdpBlockInRange.InRangeOfMyBomb) &&
+                    (!mdpBlockInRange.InRangeOfEnemyBomb))
+                    return true;
             }
             return false;
         }
