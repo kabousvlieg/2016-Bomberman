@@ -476,7 +476,7 @@ namespace Reference.Strategies.MDP.Tests
         }
 
         [TestMethod()]
-        public void GetPowerUp()
+        public void GetPowerUp1()
         {
             var charMap = new char[][]
             {
@@ -500,6 +500,39 @@ namespace Reference.Strategies.MDP.Tests
                 "#     +       +   + #".ToCharArray(),
                 "# # # #+#+#+#+# # # #".ToCharArray(),
                 "#   +               #".ToCharArray(),
+                "#####################".ToCharArray(),
+            };
+            var map = TestUtils.TestMap(charMap, 4);
+            var gameStrategy = new MdpStrategy();
+            var command = gameStrategy.ExecuteStrategy(map, 'A');
+            Assert.IsTrue(command == Commands.GameCommand.MoveLeft);
+        }
+
+        [TestMethod()]
+        public void GetPowerUp2()
+        {
+            var charMap = new char[][]
+            {
+                "#####################".ToCharArray(),
+                "#     A    +  +++   #".ToCharArray(),
+                "# # #!# # # #+#+# # #".ToCharArray(),
+                "#     +++   +++     #".ToCharArray(),
+                "#+# # # #+#+# # # #+#".ToCharArray(),
+                "#     ++  +  &      #".ToCharArray(),
+                "# # #+# #+#+# # # # #".ToCharArray(),
+                "#    + ++   +    +  #".ToCharArray(),
+                "# # # #+#+#+#+#D# # #".ToCharArray(),
+                "#   + +++++++++6+   #".ToCharArray(),
+                "# # #+# #+$+# #+# # #".ToCharArray(),
+                "#   + +++++++++ +   #".ToCharArray(),
+                "# # # #+#+#+#+# # # #".ToCharArray(),
+                "#    + ++   +  & +  #".ToCharArray(),
+                "# # #+# #+#+# # # # #".ToCharArray(),
+                "#C    ++  +b        #".ToCharArray(),
+                "#!# # # #+#+# # # # #".ToCharArray(),
+                "#     +++   ++      #".ToCharArray(),
+                "# # #+#+# # #+# # # #".ToCharArray(),
+                "#    ++  + +  +++   #".ToCharArray(),
                 "#####################".ToCharArray(),
             };
             var map = TestUtils.TestMap(charMap, 4);

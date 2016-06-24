@@ -25,12 +25,12 @@ namespace Reference.Strategies.MDP
             //Check if we can plant a bomb
             if (CanWePlantABomb(mdp))
                 return GameCommand.PlaceBomb;
-            if (CanWeBlowABomb())
+            if (CanWeBlowABomb(bestMdpMove))
                 return GameCommand.TriggerBomb;
             return bestMdpMove;
         }
 
-        private bool CanWeBlowABomb()
+        private bool CanWeBlowABomb(GameCommand bestMdpMove)
         {
             for (var y = 1; y <= _gameMap.MapHeight; y++)
             {
@@ -38,7 +38,14 @@ namespace Reference.Strategies.MDP
                 {
                     var block = _gameMap.GetBlockAtLocation(x, y);
                     if (block.Bomb?.Owner.Key == _player.Key)
-                        return true;
+                    {
+                        if (block.Bomb.IsExploding ||
+                            block.Bomb.BombTimer == 1)
+                            continue;
+                        if (bestMdpMove == GameCommand.DoNothing ||
+                            _player.BombBag == 0)
+                            return true;
+                    }
                 }
             }
             return false;

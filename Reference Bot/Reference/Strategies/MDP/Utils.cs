@@ -72,9 +72,9 @@ namespace Reference.Strategies.MDP
                         else if (block.Entity is PlayerEntity)
                             Debug.Write((block.Entity as PlayerEntity).Key);
                         else if (block.Entity is BombBagPowerUpEntity)
-                            Debug.Write("!");
-                        else if (block.Entity is BombRaduisPowerUpEntity)
                             Debug.Write("&");
+                        else if (block.Entity is BombRaduisPowerUpEntity)
+                            Debug.Write("!");
                         else if (block.Entity is SuperPowerUp)
                             Debug.Write("$");
                         else
