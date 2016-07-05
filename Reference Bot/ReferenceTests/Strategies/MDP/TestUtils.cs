@@ -33,6 +33,9 @@ namespace Reference.Strategies.MDP.Tests
                         case '+':
                             assignDestructableWall(gm, x, y);
                             break;
+                        case '*':
+                            assignExploding(gm, x, y);
+                            break;
                         case '&':
                             assignBombBagPowerUp(gm, x, y);
                             break;
@@ -48,7 +51,7 @@ namespace Reference.Strategies.MDP.Tests
                         case 'D':
                             assignPlayer(map, gm, x, y, bombRange);
                             break;
-                        case '*':
+                        case '0':
                             assignBombExplode(gm, x, y, bombRange);
                             break;
                         case '1':
@@ -312,6 +315,19 @@ namespace Reference.Strategies.MDP.Tests
                     X = x+1,
                     Y = y+1
                 }
+            };
+        }
+
+        private static void assignExploding(GameMap gm, int x, int y)
+        {
+            gm.GameBlocks[x, y] = new GameBlock()
+            {
+                Location = new Location()
+                {
+                    X = x + 1,
+                    Y = y + 1
+                },
+                Exploding = true
             };
         }
 

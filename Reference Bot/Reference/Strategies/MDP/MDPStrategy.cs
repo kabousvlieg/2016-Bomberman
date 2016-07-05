@@ -22,11 +22,11 @@ namespace Reference.Strategies.MDP
             mdp.AssignMdpGoals(); 
             mdp.CalculateMdp();
             var bestMove = mdp.CalculateBestMoveFromMdp();
-            if (!mdp.areWeInRangeOfBomb())
-                bestMove = ruleEngine.OverrideMdpMoveWithRuleEngine(bestMove, mdp);
+           
+            bestMove = ruleEngine.OverrideMdpMoveWithRuleEngine(bestMove, mdp);
 #if (DEBUG)
-            if ((stopwatch.ElapsedMilliseconds > 2000))
-                Assert.Fail("Code overran time of 2 seconds");
+            //if ((stopwatch.ElapsedMilliseconds > 2000))
+            //    Assert.Fail("Code overran time of 2 seconds");
 #endif
             return bestMove;
         }

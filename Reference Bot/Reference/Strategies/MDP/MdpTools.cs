@@ -12,10 +12,10 @@ namespace Reference.Strategies.MDP
         private readonly int WallValue = 10;
         private readonly int PowerUpValue = 100;
         private readonly int SuperPowerUpValue = 200;
-        private readonly int PenaltyValue = 3;
-        private readonly int EnemyBombPenalty = 9;
+        private readonly int PenaltyValue = 30;
+        private readonly int EnemyBombPenalty = 90;
         //private readonly int BombValue = -100;
-        private readonly int PathWhenBombValue = 500;
+        private readonly int PathWhenBombValue = 5000;
 
 
         public enum MdpTypes
@@ -334,8 +334,15 @@ namespace Reference.Strategies.MDP
                 if ((!MdpMap[x, y].InRangeOfMyBomb) && (!MdpMap[x, y].InRangeOfEnemyBomb))
                 {
                     MdpMap[x, y].Type = MdpTypes.Path;
-                    MdpMap[x, y].ValidItemOnBlockValue = true;
-                    MdpMap[x, y].ItemOnBlockValue += PathWhenBombValue;
+                    if (!MdpMap[x, y].ValidItemOnBlockValue)
+                    {
+                        MdpMap[x, y].ValidItemOnBlockValue = true;
+                        MdpMap[x, y].ItemOnBlockValue = PathWhenBombValue;
+                    }
+                    else
+                    {
+                        MdpMap[x, y].ItemOnBlockValue += PathWhenBombValue;
+                    }
                 }
                 else
                 {
@@ -583,7 +590,10 @@ namespace Reference.Strategies.MDP
 
             Debug.WriteLine("");
             Debug.WriteLine("");
-            Debug.WriteLine(" 1234567890123456789012");
+            if (printSign)
+                Debug.WriteLine(" 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2");
+            else
+                Debug.WriteLine(" 1234567890123456789012");
             for (var y = 1; y <= _gameMap.MapHeight; y++)
             {
                 Debug.Write(y % 9);
@@ -593,7 +603,7 @@ namespace Reference.Strategies.MDP
                         Debug.Write(printSign ? "BB" : "B");
                     else if (_mdpMap[x, y].Type == MdpTypes.Indestructable)
                         Debug.Write(printSign ? "##" : "#");
-                    else if (_mdpMap[x, y].ValidItemOnBlockValue)
+                    else if ((_mdpMap[x, y].ValidItemOnBlockValue) && (_mdpMap[x, y].Type != MdpTypes.Path))
                     {
                         if (_mdpMap[x, y].ItemOnBlockValue == PowerUpValue)
                             Debug.Write(printSign ? "!!" : "!");

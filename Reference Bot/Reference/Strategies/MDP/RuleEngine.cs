@@ -1,4 +1,5 @@
-﻿using Reference.Commands;
+﻿using System;
+using Reference.Commands;
 using Reference.Domain.Map;
 using Reference.Domain.Map.Entities;
 
@@ -19,15 +20,53 @@ namespace Reference.Strategies.MDP
         {            
             //Check for survival
             //Will our bestMdpMove move into explosion
-            //Will our bestMdpMove move into range of bomb
+            if (WalkIntoExplosion(bestMdpMove))
+                return GameCommand.DoNothing;
+            if (!mdp.areWeInRangeOfBomb())
+            {
 
-            //Check if we can blow up the enemy
-            //Check if we can plant a bomb
-            if (CanWePlantABomb(mdp))
-                return GameCommand.PlaceBomb;
-            if (CanWeBlowABomb(bestMdpMove))
-                return GameCommand.TriggerBomb;
+                //Check if we can blow up the enemy
+                //Check if we can plant a bomb
+                if (CanWePlantABomb(mdp))
+                    return GameCommand.PlaceBomb;
+                if (CanWeBlowABomb(bestMdpMove))
+                    return GameCommand.TriggerBomb;
+            }
             return bestMdpMove;
+        }
+
+        private bool WalkIntoExplosion(GameCommand bestMdpMove)
+        {
+            int x, y;
+            switch (bestMdpMove)
+            {
+                case GameCommand.MoveUp:
+                    x = _player.Location.X;
+                    y = _player.Location.Y - 1;
+                    break;
+                case GameCommand.MoveLeft:
+                    x = _player.Location.X - 1;
+                    y = _player.Location.Y;
+                    break;
+                case GameCommand.MoveRight:
+                    x = _player.Location.X + 1;
+                    y = _player.Location.Y;
+                    break;
+                case GameCommand.MoveDown:
+                    x = _player.Location.X + 1;
+                    y = _player.Location.Y;
+                    break;
+                case GameCommand.PlaceBomb:
+                    return false;
+                case GameCommand.TriggerBomb:
+                    return false;
+                case GameCommand.DoNothing:
+                    return false;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(bestMdpMove), bestMdpMove, null);
+            }
+            var block = _gameMap.GetBlockAtLocation(x, y);
+            return block.Exploding;
         }
 
         private bool CanWeBlowABomb(GameCommand bestMdpMove)
@@ -39,11 +78,9 @@ namespace Reference.Strategies.MDP
                     var block = _gameMap.GetBlockAtLocation(x, y);
                     if (block.Bomb?.Owner.Key == _player.Key)
                     {
-                        if (block.Bomb.IsExploding ||
-                            block.Bomb.BombTimer == 1)
+                        if (block.Bomb.IsExploding || block.Bomb.BombTimer == 1)
                             continue;
-                        if (bestMdpMove == GameCommand.DoNothing ||
-                            _player.BombBag == 0)
+                        if (bestMdpMove == GameCommand.DoNothing || _player.BombBag == 0)
                             return true;
                     }
                 }
@@ -66,21 +103,16 @@ namespace Reference.Strategies.MDP
                 {
                     var xrange = _player.Location.X - range;
                     var yrange = _player.Location.Y;
-                    if (PlantBombUnlessBombBlocked(xrange, yrange,
-                                                   ref bombBlockedXMinusDirection,
-                                                   mdp))
+                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedXMinusDirection, mdp))
                     {
                         return true;
                     }
-
                 }
                 if ((_player.Location.X + range < _gameMap.MapWidth) && (!bombBlockedXPlusDirection))
                 {
                     var xrange = _player.Location.X + range;
                     var yrange = _player.Location.Y;
-                    if (PlantBombUnlessBombBlocked(xrange, yrange,
-                                                   ref bombBlockedXPlusDirection,
-                                                   mdp))
+                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedXPlusDirection, mdp))
                     {
                         return true;
                     }
@@ -89,9 +121,7 @@ namespace Reference.Strategies.MDP
                 {
                     var xrange = _player.Location.X;
                     var yrange = _player.Location.Y - range;
-                    if (PlantBombUnlessBombBlocked(xrange, yrange,
-                                                   ref bombBlockedYMinusDirection,
-                                                   mdp))
+                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedYMinusDirection, mdp))
                     {
                         return true;
                     }
@@ -100,9 +130,7 @@ namespace Reference.Strategies.MDP
                 {
                     var xrange = _player.Location.X;
                     var yrange = _player.Location.Y + range;
-                    if (PlantBombUnlessBombBlocked(xrange, yrange,
-                                                   ref bombBlockedYPlusDirection,
-                                                   mdp))
+                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedYPlusDirection, mdp))
                     {
                         return true;
                     }
@@ -125,9 +153,7 @@ namespace Reference.Strategies.MDP
             }
             else
             {
-                if ((blockInRange.Entity is DestructibleWallEntity) &&
-                    (!mdpBlockInRange.InRangeOfMyBomb) &&
-                    (!mdpBlockInRange.InRangeOfEnemyBomb))
+                if ((blockInRange.Entity is DestructibleWallEntity) && (!mdpBlockInRange.InRangeOfMyBomb) && (!mdpBlockInRange.InRangeOfEnemyBomb))
                     return true;
             }
             return false;
