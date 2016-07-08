@@ -14,6 +14,7 @@ namespace Reference.Commands
         MoveDown = 4,
         PlaceBomb = 5,
         TriggerBomb = 6,
-        DoNothing = 7
+        DoNothing = 7,
+        ImDed = 8
     }
 }

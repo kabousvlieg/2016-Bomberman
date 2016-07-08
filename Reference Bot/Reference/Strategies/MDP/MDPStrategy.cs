@@ -16,14 +16,18 @@ namespace Reference.Strategies.MDP
 #if (DEBUG)
             var stopwatch = Stopwatch.StartNew();
 #endif
-
             utils.DrawMap();
+            //TODO recursive breadth search until I am out of time
+            //TODO calculate enemy best moves and take into account
             while (!mdp.AssignBombValues()) {} //while not done
             mdp.AssignMdpGoals(); 
             mdp.CalculateMdp();
             var bestMove = mdp.CalculateBestMoveFromMdp();
-           
             bestMove = ruleEngine.OverrideMdpMoveWithRuleEngine(bestMove, mdp);
+            //tickTheMap
+
+            if (bestMove == GameCommand.ImDed)
+                bestMove = GameCommand.TriggerBomb; //TODO last ditch effort, place bomb or trigger
 #if (DEBUG)
             //if ((stopwatch.ElapsedMilliseconds > 2000))
             //    Assert.Fail("Code overran time of 2 seconds");
