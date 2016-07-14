@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Reference.Commands;
 using Reference.Domain.Map;
 using Reference.Domain.Map.Entities;
 using Reference.Domain.Map.Entities.PowerUps;
@@ -50,7 +51,7 @@ namespace Reference.Strategies.MDP
             Debug.WriteLine(" 1234567890123456789012");
             for (var y = 1; y <= _gameMap.MapHeight; y++)
             {
-                Debug.Write(y % 10);
+                Debug.Write(y%10);
                 for (var x = 1; x <= _gameMap.MapWidth; x++)
                 {
                     var block = _gameMap.GetBlockAtLocation(x, y);
@@ -94,6 +95,34 @@ namespace Reference.Strategies.MDP
                     else Debug.Write(" ");
                 }
                 Debug.WriteLine("");
+            }
+        }
+
+        public void tickTheMap(ref GameMap gameMap, GameCommand bestMove)
+        {
+            for (var y = 1; y <= _gameMap.MapHeight; y++)
+            {
+                for (var x = 1; x <= _gameMap.MapWidth; x++)
+                {
+                    var block = _gameMap.GetBlockAtLocation(x, y);
+                    if (block.Bomb != null)
+                    {
+                        if (block.Bomb.IsExploding)
+                        {
+                            _gameMap.GameBlocks[x - 1, y - 1].Bomb = null;
+                        }
+                        else if (block.Bomb.BombTimer == 1)
+                        {
+                            _gameMap.GameBlocks[x - 1, y - 1].Bomb.IsExploding = true;
+                            _gameMap.GameBlocks[x - 1, y - 1].Bomb.BombTimer--;
+                        }
+                        else
+                        {
+                            _gameMap.GameBlocks[x - 1, y - 1].Bomb.BombTimer--;
+                        }
+                    }
+
+                }
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Reference.Commands;
 using Reference.Domain.Map;
@@ -29,6 +30,16 @@ namespace Reference.Strategies.MDP
             //Wall,
             Path,
             //PathAsGoal
+        }
+
+        public struct Moves
+        {
+            GameCommand My1stBestMove;
+            GameCommand My2ndBestMove;
+            GameCommand My3rdBestMove;
+            GameCommand Enemy1BestMove;
+            GameCommand Enemy2BestMove;
+            GameCommand Enemy3BestMove;
         }
 
         public struct MdpBlock
@@ -353,44 +364,47 @@ namespace Reference.Strategies.MDP
         #endregion
 
         #region bestmove
-        public GameCommand CalculateBestMoveFromMdp()
+        public Moves CalculateBestMoveFromMdp()
         {
             //TODO 
             //1 - We can still get stuck here...
-            var largestMdpValue = int.MinValue;
-            var bestMove = GameCommand.DoNothing;
+            var largestMdpValues = new List<int> {int.MinValue, int.MinValue, int.MinValue, int.MinValue};
+            var bestMove = new GameCommand[4];
+
             if (_player.Location.X > 1)
             {
                 var xoffset = _player.Location.X - 1;
                 var yoffset = _player.Location.Y;
-                largestMdpValue = isBestMoveThisWay(xoffset, yoffset, largestMdpValue, ref bestMove, GameCommand.MoveLeft);
+                largestMdpValues[0] = isBestMoveThisWay(xoffset, yoffset, ref bestMove, GameCommand.MoveLeft);
             }
             if (_player.Location.X < _gameMap.MapWidth)
             {
                 var xoffset = _player.Location.X + 1;
                 var yoffset = _player.Location.Y;
-                largestMdpValue = isBestMoveThisWay(xoffset, yoffset, largestMdpValue, ref bestMove, GameCommand.MoveRight);
+                largestMdpValues[1] = isBestMoveThisWay(xoffset, yoffset, ref bestMove, GameCommand.MoveRight);
+
             }
             if (_player.Location.Y > 1)
             {
                 var xoffset = _player.Location.X;
                 var yoffset = _player.Location.Y - 1;
-                largestMdpValue = isBestMoveThisWay(xoffset, yoffset, largestMdpValue, ref bestMove, GameCommand.MoveUp);
+                largestMdpValues[2] = isBestMoveThisWay(xoffset, yoffset, ref bestMove, GameCommand.MoveUp);
             }
             if (_player.Location.Y < _gameMap.MapHeight)
             {
                 var xoffset = _player.Location.X;
                 var yoffset = _player.Location.Y + 1;
-                largestMdpValue = isBestMoveThisWay(xoffset, yoffset, largestMdpValue, ref bestMove, GameCommand.MoveDown);
+                largestMdpValues[3] = isBestMoveThisWay(xoffset, yoffset, ref bestMove, GameCommand.MoveDown);
             }
+            
             return bestMove;
         }
 
-        private int isBestMoveThisWay(int xoffset, int yoffset, int largestMdpValue, ref GameCommand bestMove, GameCommand thisWay)
+        private int isBestMoveThisWay(int xoffset, int yoffset, ref GameCommand bestMove, GameCommand thisWay)
         {
+            var largestMdpValue = int.MinValue;
             if (_mdpMap[xoffset, yoffset].ValidValue &&
-                _mdpMap[xoffset, yoffset].Type == MdpTypes.Path &&
-                _mdpMap[xoffset, yoffset].Value > largestMdpValue)
+                _mdpMap[xoffset, yoffset].Type == MdpTypes.Path)
             {
                 if (_mdpMap[xoffset, yoffset].InRangeOfEnemyBomb &&
                     !_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfEnemyBomb)
