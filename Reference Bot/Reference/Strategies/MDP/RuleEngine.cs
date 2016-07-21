@@ -7,54 +7,54 @@ namespace Reference.Strategies.MDP
 {
     public class RuleEngine
     {
-        private PlayerEntity _player;
+        private PlayerEntity[] _players;
         private GameMap _gameMap;
 
-        public RuleEngine(GameMap gameMap, PlayerEntity player)
+        public RuleEngine(GameMap gameMap, PlayerEntity[] players)
         {
-            _player = player;
+            _players = players;
             _gameMap = gameMap;
         }
 
-        public GameCommand OverrideMdpMoveWithRuleEngine(GameCommand bestMdpMove, MdpTools mdp)
+        public GameCommand OverrideMdpMoveWithRuleEngine(GameCommand bestMdpMove, MdpTools mdp, PlayerEntity player)
         {            
             //Check for survival
             //Will our bestMdpMove move into explosion
-            if (WalkIntoExplosion(bestMdpMove))
+            if (WalkIntoExplosion(bestMdpMove, player))
                 return GameCommand.DoNothing;
-            if (!mdp.areWeInRangeOfBomb())
+            if (!mdp.areWeInRangeOfBomb(player))
             {
 
                 //Check if we can blow up the enemy
                 //Check if we can plant a bomb
-                if (CanWePlantABomb(mdp))
+                if (CanWePlantABomb(mdp, player))
                     return GameCommand.PlaceBomb;
-                if (CanWeBlowABomb(bestMdpMove))
+                if (CanWeBlowABomb(bestMdpMove, player))
                     return GameCommand.TriggerBomb;
             }
             return bestMdpMove;
         }
 
-        private bool WalkIntoExplosion(GameCommand bestMdpMove)
+        private bool WalkIntoExplosion(GameCommand bestMdpMove, PlayerEntity player)
         {
             int x, y;
             switch (bestMdpMove)
             {
                 case GameCommand.MoveUp:
-                    x = _player.Location.X;
-                    y = _player.Location.Y - 1;
+                    x = player.Location.X;
+                    y = player.Location.Y - 1;
                     break;
                 case GameCommand.MoveLeft:
-                    x = _player.Location.X - 1;
-                    y = _player.Location.Y;
+                    x = player.Location.X - 1;
+                    y = player.Location.Y;
                     break;
                 case GameCommand.MoveRight:
-                    x = _player.Location.X + 1;
-                    y = _player.Location.Y;
+                    x = player.Location.X + 1;
+                    y = player.Location.Y;
                     break;
                 case GameCommand.MoveDown:
-                    x = _player.Location.X + 1;
-                    y = _player.Location.Y;
+                    x = player.Location.X + 1;
+                    y = player.Location.Y;
                     break;
                 case GameCommand.PlaceBomb:
                     return false;
@@ -69,18 +69,18 @@ namespace Reference.Strategies.MDP
             return block.Exploding;
         }
 
-        private bool CanWeBlowABomb(GameCommand bestMdpMove)
+        private bool CanWeBlowABomb(GameCommand bestMdpMove, PlayerEntity player)
         {
             for (var y = 1; y <= _gameMap.MapHeight; y++)
             {
                 for (var x = 1; x <= _gameMap.MapWidth; x++)
                 {
                     var block = _gameMap.GetBlockAtLocation(x, y);
-                    if (block.Bomb?.Owner.Key == _player.Key)
+                    if (block.Bomb?.Owner.Key == player.Key)
                     {
                         if (block.Bomb.IsExploding || block.Bomb.BombTimer == 1)
                             continue;
-                        if (bestMdpMove == GameCommand.DoNothing || _player.BombBag == 0)
+                        if (bestMdpMove == GameCommand.DoNothing || player.BombBag == 0)
                             return true;
                     }
                 }
@@ -88,48 +88,48 @@ namespace Reference.Strategies.MDP
             return false;
         }
 
-        private bool CanWePlantABomb(MdpTools mdp)
+        private bool CanWePlantABomb(MdpTools mdp, PlayerEntity player)
         {
-            if (_player.BombBag == 0)
+            if (player.BombBag == 0)
                 return false;
 
             var bombBlockedXMinusDirection = false;
             var bombBlockedXPlusDirection = false;
             var bombBlockedYMinusDirection = false;
             var bombBlockedYPlusDirection = false;
-            for (int range = 1; range <= _player.BombRadius; range++)
+            for (int range = 1; range <= player.BombRadius; range++)
             {
-                if ((_player.Location.X - range > 1) && (!bombBlockedXMinusDirection))
+                if ((player.Location.X - range > 1) && (!bombBlockedXMinusDirection))
                 {
-                    var xrange = _player.Location.X - range;
-                    var yrange = _player.Location.Y;
+                    var xrange = player.Location.X - range;
+                    var yrange = player.Location.Y;
                     if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedXMinusDirection, mdp))
                     {
                         return true;
                     }
                 }
-                if ((_player.Location.X + range < _gameMap.MapWidth) && (!bombBlockedXPlusDirection))
+                if ((player.Location.X + range < _gameMap.MapWidth) && (!bombBlockedXPlusDirection))
                 {
-                    var xrange = _player.Location.X + range;
-                    var yrange = _player.Location.Y;
+                    var xrange = player.Location.X + range;
+                    var yrange = player.Location.Y;
                     if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedXPlusDirection, mdp))
                     {
                         return true;
                     }
                 }
-                if ((_player.Location.Y - range > 1) && (!bombBlockedYMinusDirection))
+                if ((player.Location.Y - range > 1) && (!bombBlockedYMinusDirection))
                 {
-                    var xrange = _player.Location.X;
-                    var yrange = _player.Location.Y - range;
+                    var xrange = player.Location.X;
+                    var yrange = player.Location.Y - range;
                     if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedYMinusDirection, mdp))
                     {
                         return true;
                     }
                 }
-                if ((_player.Location.Y + range < _gameMap.MapHeight) && (!bombBlockedYPlusDirection))
+                if ((player.Location.Y + range < _gameMap.MapHeight) && (!bombBlockedYPlusDirection))
                 {
-                    var xrange = _player.Location.X;
-                    var yrange = _player.Location.Y + range;
+                    var xrange = player.Location.X;
+                    var yrange = player.Location.Y + range;
                     if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedYPlusDirection, mdp))
                     {
                         return true;

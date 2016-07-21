@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using Reference.Commands;
 using Reference.Domain.Map;
 using Reference.Domain.Map.Entities;
@@ -20,11 +22,12 @@ namespace Reference.Strategies.MDP
             _playerKey = playerKey;
         }
 
-        private PlayerEntity _player = null;
-        public PlayerEntity Player => _player ?? (_player = getPlayer());
+        private PlayerEntity[] _players = new PlayerEntity[4];
 
-        public PlayerEntity getPlayer()
+        public void getPlayers(ref PlayerEntity[] players)
         {
+            //TODO Not guaranteed 4 players always
+            var count = 1;
             for (var y = 1; y <= _gameMap.MapHeight; y++)
             {
                 for (var x = 1; x <= _gameMap.MapWidth; x++)
@@ -36,12 +39,16 @@ namespace Reference.Strategies.MDP
                     {
                         if ((block.Entity as PlayerEntity).Key == _playerKey)
                         {
-                            return block.Entity as PlayerEntity;
+                            players[0] = block.Entity as PlayerEntity;
+                        }
+                        else
+                        {
+                            players[count++] = block.Entity as PlayerEntity;
                         }
                     }
                 }
             }
-            return null;
+            _players = players;
         }
 
         public void DrawMap()
@@ -98,7 +105,7 @@ namespace Reference.Strategies.MDP
             }
         }
 
-        public void tickTheMap(ref GameMap gameMap, GameCommand bestMove)
+        public void tickTheMap(ref GameMap gameMap, List<MdpTools.PlayersAndMoves> playerMoves)
         {
             for (var y = 1; y <= _gameMap.MapHeight; y++)
             {

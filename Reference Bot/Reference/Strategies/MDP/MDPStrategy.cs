@@ -1,47 +1,54 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Reference.Commands;
 using Reference.Domain.Map;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Reference.Domain.Map.Entities;
 
 namespace Reference.Strategies.MDP
 {
     public class MdpStrategy : IStrategy
     {
+        struct GameRound
+        {
+            public GameMap Map;
+            List<MdpTools.PlayersAndMoves> playersMoves;
+        }
+
         public GameCommand ExecuteStrategy(GameMap gameMap, char playerKey)
         {
             const int rounds = 2;
-            var bestMoves = new MdpTools.Moves[rounds];
             for (var i = 0; i < rounds; i++)
             {
+                List<MdpTools.PlayersAndMoves> playersMoves;
                 var utils = new Utils(gameMap, playerKey);
-                var player = utils.getPlayer();
-                var mdp = new MdpTools(gameMap, playerKey, player);
-                var ruleEngine = new RuleEngine(gameMap, player);
+                PlayerEntity[] players = new PlayerEntity[4];
+                utils.getPlayers(ref players);
+                var mdp = new MdpTools(gameMap, playerKey, players);
+                var ruleEngine = new RuleEngine(gameMap, players);
 #if (DEBUG)
                 var stopwatch = Stopwatch.StartNew();
 #endif
                 utils.DrawMap();
-                //TODO recursive breadth search until I am out of time
-                //TODO calculate enemy best moves and take into account
                 while (!mdp.AssignBombValues())
                 {
                 } //while not done
                 mdp.AssignMdpGoals();
                 mdp.CalculateMdp();
-                bestMoves[i] = mdp.CalculateBestMoveFromMdp();
-                bestMoves[i] = ruleEngine.OverrideMdpMoveWithRuleEngine(bestMoves[i], mdp);
+                playersMoves = mdp.CalculateBestMoveFromMdp();
+                playersMoves[0].BestMove = ruleEngine.OverrideMdpMoveWithRuleEngine(playersMoves[0].BestMove, mdp, playersMoves[0].playerEntity);
 
-                utils.tickTheMap(ref gameMap, bestMoves[i]);
+                utils.tickTheMap(ref gameMap, playersMoves);
             }
 
-            if (bestMoves[0] == GameCommand.ImDed)
-                bestMoves[0] = GameCommand.TriggerBomb; //TODO last ditch effort, place bomb or trigger
+            if (playersMoves[0].BestMove == GameCommand.ImDed)
+                playersMoves[0].BestMove = GameCommand.TriggerBomb; //TODO last ditch effort, place bomb or trigger
 #if (DEBUG)
             //if ((stopwatch.ElapsedMilliseconds > 2000))
             //    Assert.Fail("Code overran time of 2 seconds");
 #endif
-            return bestMoves[0];
+            return playersMoves[0].BestMove;
         }
     }
 }

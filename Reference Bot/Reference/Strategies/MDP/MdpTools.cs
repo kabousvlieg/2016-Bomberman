@@ -32,14 +32,20 @@ namespace Reference.Strategies.MDP
             //PathAsGoal
         }
 
-        public struct Moves
+        public class PlayersAndMoves
         {
-            GameCommand My1stBestMove;
-            GameCommand My2ndBestMove;
-            GameCommand My3rdBestMove;
-            GameCommand Enemy1BestMove;
-            GameCommand Enemy2BestMove;
-            GameCommand Enemy3BestMove;
+            public PlayerEntity playerEntity;
+            public GameCommand BestMove;
+            public GameCommand SecondMove;
+            public GameCommand ThirdMove;
+
+            public PlayersAndMoves(PlayerEntity entity)
+            {
+                playerEntity = entity;
+                BestMove = new GameCommand();
+                SecondMove = new GameCommand();
+                ThirdMove = new GameCommand();
+            }
         }
 
         public struct MdpBlock
@@ -57,14 +63,18 @@ namespace Reference.Strategies.MDP
         public MdpBlock[,] _mdpMap;
         private GameMap _gameMap;
         private char _playerKey;
-        private PlayerEntity _player;
+        private List<PlayersAndMoves> _players = new List<PlayersAndMoves>();
 
-        public MdpTools(GameMap gameMap, char playerKey, PlayerEntity player)
+        public MdpTools(GameMap gameMap, char playerKey, PlayerEntity[] players)
         {
             _mdpMap = new MdpBlock[gameMap.MapWidth + 1, gameMap.MapHeight + 1];
             _gameMap = gameMap;
             _playerKey = playerKey;
-            _player = player;
+            foreach (var player in players)
+            {
+                if (player != null)
+                    _players.Add(new PlayersAndMoves(player));     
+            }
             for (var y = 1; y <= _gameMap.MapHeight; y++)
             {
                 for (var x = 1; x <= _gameMap.MapWidth; x++)
@@ -248,8 +258,8 @@ namespace Reference.Strategies.MDP
                     _mdpMap[x, y].Value = Int32.MinValue;
                     _mdpMap[x, y].ValidItemOnBlockValue = false;
                     _mdpMap[x, y].ItemOnBlockValue = Int32.MinValue;
-                    if ((_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfMyBomb) ||
-                        (_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfEnemyBomb))
+                    if ((_mdpMap[_players[0].playerEntity.Location.X, _players[0].playerEntity.Location.Y].InRangeOfMyBomb) ||
+                        (_mdpMap[_players[0].playerEntity.Location.X, _players[0].playerEntity.Location.Y].InRangeOfEnemyBomb))
                         AssignBlockEntityValues(_mdpMap, block, x, y, true);
                     else
                         AssignBlockEntityValues(_mdpMap, block, x, y, false);
@@ -364,55 +374,97 @@ namespace Reference.Strategies.MDP
         #endregion
 
         #region bestmove
-        public Moves CalculateBestMoveFromMdp()
+
+        public struct ValuesAndMoves
+        {
+            public int Value;
+            public GameCommand Move;
+
+            public ValuesAndMoves(int value, GameCommand move)
+            {
+                Value = value;
+                Move = move;
+            }
+        }
+
+        public List<PlayersAndMoves> CalculateBestMoveFromMdp()
         {
             //TODO 
             //1 - We can still get stuck here...
-            var largestMdpValues = new List<int> {int.MinValue, int.MinValue, int.MinValue, int.MinValue};
-            var bestMove = new GameCommand[4];
+            List<ValuesAndMoves> largestMdpValues;
+            GameCommand bestMove = GameCommand.DoNothing;
 
-            if (_player.Location.X > 1)
+            foreach (var player in _players)
             {
-                var xoffset = _player.Location.X - 1;
-                var yoffset = _player.Location.Y;
-                largestMdpValues[0] = isBestMoveThisWay(xoffset, yoffset, ref bestMove, GameCommand.MoveLeft);
+                largestMdpValues = new List<ValuesAndMoves> {
+                    new ValuesAndMoves(int.MinValue, GameCommand.MoveLeft),
+                    new ValuesAndMoves(int.MinValue, GameCommand.MoveRight),
+                    new ValuesAndMoves(int.MinValue, GameCommand.MoveUp),
+                    new ValuesAndMoves(int.MinValue, GameCommand.MoveDown)
+                };
+                bestMove = GameCommand.DoNothing;
+                if (player.playerEntity.Location.X > 1)
+                {
+                    var xoffset = player.playerEntity.Location.X - 1;
+                    var yoffset = player.playerEntity.Location.Y;
+                    largestMdpValues[0] = new ValuesAndMoves(isBestMoveThisWay(xoffset, yoffset, player.playerEntity), GameCommand.MoveLeft);
+                }
+                if (player.playerEntity.Location.X < _gameMap.MapWidth)
+                {
+                    var xoffset = player.playerEntity.Location.X + 1;
+                    var yoffset = player.playerEntity.Location.Y;
+                    largestMdpValues[1] = new ValuesAndMoves(isBestMoveThisWay(xoffset, yoffset, player.playerEntity), GameCommand.MoveRight);
+                }
+                if (player.playerEntity.Location.Y > 1)
+                {
+                    var xoffset = player.playerEntity.Location.X;
+                    var yoffset = player.playerEntity.Location.Y - 1;
+                    largestMdpValues[2] = new ValuesAndMoves(isBestMoveThisWay(xoffset, yoffset, player.playerEntity), GameCommand.MoveUp);
+                }
+                if (player.playerEntity.Location.Y < _gameMap.MapHeight)
+                {
+                    var xoffset = player.playerEntity.Location.X;
+                    var yoffset = player.playerEntity.Location.Y + 1;
+                    largestMdpValues[3] = new ValuesAndMoves(isBestMoveThisWay(xoffset, yoffset, player.playerEntity), GameCommand.MoveDown);
+                }
+                player.BestMove = GetLargestAndRemove(largestMdpValues);
+                player.SecondMove = GetLargestAndRemove(largestMdpValues);
+                player.ThirdMove = GetLargestAndRemove(largestMdpValues);
             }
-            if (_player.Location.X < _gameMap.MapWidth)
-            {
-                var xoffset = _player.Location.X + 1;
-                var yoffset = _player.Location.Y;
-                largestMdpValues[1] = isBestMoveThisWay(xoffset, yoffset, ref bestMove, GameCommand.MoveRight);
-
-            }
-            if (_player.Location.Y > 1)
-            {
-                var xoffset = _player.Location.X;
-                var yoffset = _player.Location.Y - 1;
-                largestMdpValues[2] = isBestMoveThisWay(xoffset, yoffset, ref bestMove, GameCommand.MoveUp);
-            }
-            if (_player.Location.Y < _gameMap.MapHeight)
-            {
-                var xoffset = _player.Location.X;
-                var yoffset = _player.Location.Y + 1;
-                largestMdpValues[3] = isBestMoveThisWay(xoffset, yoffset, ref bestMove, GameCommand.MoveDown);
-            }
-            
-            return bestMove;
+            return _players;
         }
 
-        private int isBestMoveThisWay(int xoffset, int yoffset, ref GameCommand bestMove, GameCommand thisWay)
+        private static GameCommand GetLargestAndRemove(List<ValuesAndMoves> largestMdpValues)
+        {
+            PlayersAndMoves player;
+            var largest = int.MinValue;
+            var pos = 0;
+            for (int i = largestMdpValues.Count - 1; i >= 0; i--)
+            {
+                if (largestMdpValues[i].Value > largest)
+                {
+                    largest = largestMdpValues[i].Value;
+                    pos = i;
+                }
+            }
+            var move = largestMdpValues[pos].Move;
+            largestMdpValues.RemoveAt(pos);
+            return move;
+        }
+
+        private int isBestMoveThisWay(int xoffset, int yoffset, PlayerEntity player)
         {
             var largestMdpValue = int.MinValue;
             if (_mdpMap[xoffset, yoffset].ValidValue &&
                 _mdpMap[xoffset, yoffset].Type == MdpTypes.Path)
             {
                 if (_mdpMap[xoffset, yoffset].InRangeOfEnemyBomb &&
-                    !_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfEnemyBomb)
+                    !_mdpMap[player.Location.X, player.Location.Y].InRangeOfEnemyBomb)
                 {
                     //can't go that way...
                 }
                 else if (_mdpMap[xoffset, yoffset].InRangeOfMyBomb &&
-                    !_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfMyBomb)
+                    !_mdpMap[player.Location.X, player.Location.Y].InRangeOfMyBomb)
                 {
                     //can't go that way...
                     //TODO can improve this if we can determine it is safe to step into a blast zone
@@ -420,7 +472,6 @@ namespace Reference.Strategies.MDP
                 else
                 {
                     largestMdpValue = _mdpMap[xoffset, yoffset].Value;
-                    bestMove = thisWay;
                 }
             }
             return largestMdpValue;
@@ -651,10 +702,10 @@ namespace Reference.Strategies.MDP
             Debug.WriteLine("");
         }
 
-        public bool areWeInRangeOfBomb()
+        public bool areWeInRangeOfBomb(PlayerEntity player)
         {
-            return (_mdpMap[_player.Location.X, _player.Location.Y].InRangeOfMyBomb ||
-                    _mdpMap[_player.Location.X, _player.Location.Y].InRangeOfEnemyBomb);
+            return (_mdpMap[player.Location.X, player.Location.Y].InRangeOfMyBomb ||
+                    _mdpMap[player.Location.X, player.Location.Y].InRangeOfEnemyBomb);
         }
     }
 }
