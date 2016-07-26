@@ -105,27 +105,35 @@ namespace Reference.Strategies.MDP
             }
         }
 
-        public void tickTheMap(ref GameMap gameMap, List<MdpTools.PlayersAndMoves> playerMoves)
+        public static void tickTheMap(ref GameMap gameMap, List<MdpTools.PlayersAndMoves> playerMoves)
         {
-            for (var y = 1; y <= _gameMap.MapHeight; y++)
+            for (var i = 0; i < playerMoves.Count; i++)
             {
-                for (var x = 1; x <= _gameMap.MapWidth; x++)
+                //TODO Move the player
+                //Bombs kills player
+                //Player picks up powerup
+                //Player plants bomb
+                //Player detonates bomb
+            }
+            for (var y = 1; y <= gameMap.MapHeight; y++)
+            {
+                for (var x = 1; x <= gameMap.MapWidth; x++)
                 {
-                    var block = _gameMap.GetBlockAtLocation(x, y);
+                    var block = gameMap.GetBlockAtLocation(x, y);
                     if (block.Bomb != null)
                     {
                         if (block.Bomb.IsExploding)
                         {
-                            _gameMap.GameBlocks[x - 1, y - 1].Bomb = null;
+                            gameMap.GameBlocks[x - 1, y - 1].Bomb = null;
                         }
                         else if (block.Bomb.BombTimer == 1)
                         {
-                            _gameMap.GameBlocks[x - 1, y - 1].Bomb.IsExploding = true;
-                            _gameMap.GameBlocks[x - 1, y - 1].Bomb.BombTimer--;
+                            gameMap.GameBlocks[x - 1, y - 1].Bomb.IsExploding = true;
+                            gameMap.GameBlocks[x - 1, y - 1].Bomb.BombTimer--;
                         }
                         else
                         {
-                            _gameMap.GameBlocks[x - 1, y - 1].Bomb.BombTimer--;
+                            gameMap.GameBlocks[x - 1, y - 1].Bomb.BombTimer--;
                         }
                     }
 

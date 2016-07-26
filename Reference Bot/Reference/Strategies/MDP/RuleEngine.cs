@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Reference.Commands;
 using Reference.Domain.Map;
 using Reference.Domain.Map.Entities;
@@ -16,23 +17,57 @@ namespace Reference.Strategies.MDP
             _gameMap = gameMap;
         }
 
-        public GameCommand OverrideMdpMoveWithRuleEngine(GameCommand bestMdpMove, MdpTools mdp, PlayerEntity player)
-        {            
-            //Check for survival
-            //Will our bestMdpMove move into explosion
-            if (WalkIntoExplosion(bestMdpMove, player))
-                return GameCommand.DoNothing;
-            if (!mdp.areWeInRangeOfBomb(player))
+        public void OverrideMdpMoveWithRuleEngine(ref List<MdpTools.PlayersAndMoves> player, MdpTools mdp)
+        {
+            for (int i = 0; i < player.Count; i++)
             {
-
-                //Check if we can blow up the enemy
-                //Check if we can plant a bomb
-                if (CanWePlantABomb(mdp, player))
-                    return GameCommand.PlaceBomb;
-                if (CanWeBlowABomb(bestMdpMove, player))
-                    return GameCommand.TriggerBomb;
+                //Check for survival
+                //Will our bestMdpMove move into explosion
+                if (WalkIntoExplosion(player[i].BestMove, player[i].playerEntity))
+                    player[i].BestMove = GameCommand.DoNothing;   
+                if (WalkIntoExplosion(player[i].SecondMove, player[i].playerEntity))
+                    player[i].BestMove = GameCommand.DoNothing;
+                if (WalkIntoExplosion(player[i].ThirdMove, player[i].playerEntity))
+                    player[i].BestMove = GameCommand.DoNothing;
+                //player[i] = MoveDedMovesDown(player[i]);
+                    
+                if (!mdp.areWeInRangeOfBomb(player[i].playerEntity))
+                {
+                    //Check if we can blow up the enemy
+                    //Check if we can plant a bomb
+                    if (CanWePlantABomb(mdp, player[i].playerEntity))
+                        player[i] = OverrideWithNewBestMove(player[i], GameCommand.PlaceBomb);
+                    if (CanWeBlowABomb(player[i].BestMove, player[i].playerEntity))
+                        player[i] = OverrideWithNewBestMove(player[i], GameCommand.TriggerBomb);
+                }
             }
-            return bestMdpMove;
+        }
+
+        private MdpTools.PlayersAndMoves MoveDedMovesDown(MdpTools.PlayersAndMoves player)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (player.BestMove == GameCommand.ImDed)
+                {
+                    player.BestMove = player.SecondMove;
+                    player.SecondMove = player.ThirdMove;
+                    player.ThirdMove = GameCommand.ImDed;
+                }
+                if (player.SecondMove == GameCommand.ImDed)
+                {
+                    player.SecondMove = player.ThirdMove;
+                    player.ThirdMove = GameCommand.ImDed;
+                }
+            }
+            return player;
+        }
+
+        private MdpTools.PlayersAndMoves OverrideWithNewBestMove(MdpTools.PlayersAndMoves player, GameCommand command)
+        {
+            player.ThirdMove = player.SecondMove;
+            player.SecondMove = player.BestMove;
+            player.BestMove = command;
+            return player;
         }
 
         private bool WalkIntoExplosion(GameCommand bestMdpMove, PlayerEntity player)
@@ -80,6 +115,7 @@ namespace Reference.Strategies.MDP
                     {
                         if (block.Bomb.IsExploding || block.Bomb.BombTimer == 1)
                             continue;
+                        //TODO review this decision
                         if (bestMdpMove == GameCommand.DoNothing || player.BombBag == 0)
                             return true;
                     }

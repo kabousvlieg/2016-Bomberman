@@ -249,6 +249,8 @@ namespace Reference.Strategies.MDP
         #region mdpgoalfunction
         public void AssignMdpGoals()
         {
+            //TODO If no more walls and powerups, assign goals to corners based on player key
+            //TODO or implement an already explored map writing it to disk
             for (var y = 1; y <= _gameMap.MapHeight; y++)
             {
                 for (var x = 1; x <= _gameMap.MapWidth; x++)
