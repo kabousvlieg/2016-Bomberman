@@ -107,13 +107,101 @@ namespace Reference.Strategies.MDP
 
         public static void tickTheMap(ref GameMap gameMap, List<MdpTools.PlayersAndMoves> playerMoves)
         {
-            for (var i = 0; i < playerMoves.Count; i++)
+            foreach (var player in playerMoves)
             {
-                //TODO Move the player
-                //Bombs kills player
-                //Player picks up powerup
-                //Player plants bomb
-                //Player detonates bomb
+                if ( (player.BestMove == GameCommand.MoveUp) ||
+                     (player.BestMove == GameCommand.MoveDown) ||
+                     (player.BestMove == GameCommand.MoveLeft) ||
+                     (player.BestMove == GameCommand.MoveRight) )
+                {
+                    var x = player.playerEntity.Location.X;
+                    var y = player.playerEntity.Location.Y;
+                    if (player.BestMove == GameCommand.MoveUp)
+                    {
+                        if (player.playerEntity.Location.Y > 1)
+                            y = player.playerEntity.Location.Y - 1;
+                    }
+                    if (player.BestMove == GameCommand.MoveDown)
+                    {
+                        if (player.playerEntity.Location.Y < gameMap.MapHeight)
+                            y = player.playerEntity.Location.Y + 1;
+                    }
+                    if (player.BestMove == GameCommand.MoveLeft)
+                    {
+                        if (player.playerEntity.Location.X > 1)
+                            x = player.playerEntity.Location.X - 1;
+                    }
+                    if (player.BestMove == GameCommand.MoveRight)
+                    {
+                        if (player.playerEntity.Location.X < gameMap.MapWidth)
+                            x = player.playerEntity.Location.X + 1;
+                    }
+                    gameMap.GameBlocks[player.playerEntity.Location.X - 1, player.playerEntity.Location.Y - 1].Entity = null;
+                    int bombBagPowerUpAdd = 0;
+                    int bombRadiusPowerUpAdd = 0;
+                    if (gameMap.GameBlocks[x - 1, y - 1].PowerUp != null)
+                    {
+                        if (gameMap.GameBlocks[x - 1, y - 1].PowerUp is BombBagPowerUpEntity)
+                        {
+                            bombBagPowerUpAdd = 1;
+                        }
+                        if (gameMap.GameBlocks[x - 1, y - 1].PowerUp is BombRaduisPowerUpEntity)
+                        {
+                            bombRadiusPowerUpAdd = 1;
+                        }
+                        if (gameMap.GameBlocks[x - 1, y - 1].PowerUp is SuperPowerUp)
+                        {
+                            bombBagPowerUpAdd = 1;
+                            bombRadiusPowerUpAdd = 1;
+                        }
+                        gameMap.GameBlocks[x - 1, y - 1].PowerUp = null;
+                    }
+                    gameMap.GameBlocks[x - 1, y - 1]
+                        .Entity = new PlayerEntity()
+                        {
+                            Location = new Location()
+                            {
+                                X = x,
+                                Y = y
+                            },
+                            BombBag = player.playerEntity.BombBag + bombBagPowerUpAdd,
+                            BombRadius = player.playerEntity.BombRadius + bombRadiusPowerUpAdd,
+                            Key = player.playerEntity.Key,
+                            Killed = player.playerEntity.Killed,
+                            Name = player.playerEntity.Name,
+                            Points = player.playerEntity.Points
+                        };
+                }
+                if (player.BestMove == GameCommand.PlaceBomb)
+                {
+                    gameMap.GameBlocks[player.playerEntity.Location.X - 1, player.playerEntity.Location.Y - 1]
+                        .Bomb = new BombEntity()
+                        {
+                            BombRadius = player.playerEntity.BombRadius,
+                            BombTimer = 5, // player.playerEntity.,  Hmmm problem
+                            IsExploding = false,
+                            Points = 1,
+                            Location = new Location()
+                            {
+                                X = player.playerEntity.Location.X,
+                                Y = player.playerEntity.Location.Y
+                            },
+                            Owner = new PlayerEntity()
+                            {
+                                Location = new Location()
+                                {
+                                    X = player.playerEntity.Location.X,
+                                    Y = player.playerEntity.Location.Y
+                                },
+                                BombBag = player.playerEntity.BombBag,
+                                BombRadius = player.playerEntity.BombRadius,
+                                Key = player.playerEntity.Key,
+                                Killed = player.playerEntity.Killed,
+                                Name = player.playerEntity.Name,
+                                Points = player.playerEntity.Points
+                            }
+                        };
+                }
             }
             for (var y = 1; y <= gameMap.MapHeight; y++)
             {
@@ -136,7 +224,6 @@ namespace Reference.Strategies.MDP
                             gameMap.GameBlocks[x - 1, y - 1].Bomb.BombTimer--;
                         }
                     }
-
                 }
             }
         }

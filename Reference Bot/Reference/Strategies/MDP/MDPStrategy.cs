@@ -30,7 +30,7 @@ namespace Reference.Strategies.MDP
 #if (DEBUG)
             var stopwatch = Stopwatch.StartNew();
 #endif
-            const int rounds = 2;
+            const int rounds = 5;
             List<GameRound> round = new List<GameRound>(0);
             //List<MdpTools.PlayersAndMoves> playersMoves;
             for (var i = 0; i < rounds; i++)

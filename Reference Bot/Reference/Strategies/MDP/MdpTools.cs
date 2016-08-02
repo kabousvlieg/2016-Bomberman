@@ -30,6 +30,7 @@ namespace Reference.Strategies.MDP
             //Wall,
             Path,
             //PathAsGoal
+            Destructable
         }
 
         public class PlayersAndMoves
@@ -287,7 +288,7 @@ namespace Reference.Strategies.MDP
                     }
                     else
                     {
-                        MdpMap[x, y].Type = MdpTypes.Path;
+                        MdpMap[x, y].Type = MdpTypes.Destructable;
                         MdpMap[x, y].ItemOnBlockValue = WallValue;
                         MdpMap[x, y].ValidItemOnBlockValue = true;
                     }                   
@@ -394,8 +395,6 @@ namespace Reference.Strategies.MDP
             //TODO 
             //1 - We can still get stuck here...
             List<ValuesAndMoves> largestMdpValues;
-            GameCommand bestMove = GameCommand.DoNothing;
-
             foreach (var player in _players)
             {
                 largestMdpValues = new List<ValuesAndMoves> {
@@ -404,7 +403,6 @@ namespace Reference.Strategies.MDP
                     new ValuesAndMoves(int.MinValue, GameCommand.MoveUp),
                     new ValuesAndMoves(int.MinValue, GameCommand.MoveDown)
                 };
-                bestMove = GameCommand.DoNothing;
                 if (player.playerEntity.Location.X > 1)
                 {
                     var xoffset = player.playerEntity.Location.X - 1;
@@ -451,6 +449,8 @@ namespace Reference.Strategies.MDP
             }
             var move = largestMdpValues[pos].Move;
             largestMdpValues.RemoveAt(pos);
+            if (largest == int.MinValue)
+                move = GameCommand.DoNothing;
             return move;
         }
 
