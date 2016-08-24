@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Reference.Domain.Map
 {
+    [Serializable]
     public class Location
     {
         public int X { get; set; }

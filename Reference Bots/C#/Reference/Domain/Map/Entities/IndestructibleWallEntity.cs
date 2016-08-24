@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Reference.Domain.Map.Entities
 {
+    [Serializable]
     public class IndestructibleWallEntity : BaseEntity
     {
         public override string ToString()

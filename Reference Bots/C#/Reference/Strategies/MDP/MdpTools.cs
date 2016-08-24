@@ -489,11 +489,10 @@ namespace Reference.Strategies.MDP
             //1 - What about squares with multiple destructible walls, should be worth more?
 
             var stillNotDone = false;
-            var stopwatch = Stopwatch.StartNew();
             do
             {
-                if (stopwatch.ElapsedMilliseconds > 500)
-                    break;
+                int largestDifferenceThisRun = 0;
+                int largestDifferencePreviousRun = 0;
                 stillNotDone = false;
                 for (var y = 1; y <= _gameMap.MapHeight; y++)
                 {
@@ -505,18 +504,28 @@ namespace Reference.Strategies.MDP
                         }
                         bool largestNeigbourValid;
                         var largestNeighbour = GetLargestNeighbour(x, y, out largestNeigbourValid);
-                        stillNotDone = LargestNeighbourValid(largestNeigbourValid, x, y, largestNeighbour, stillNotDone);
+                        int largestDifference = 0;
+                        stillNotDone = LargestNeighbourValid(largestNeigbourValid, x, y, largestNeighbour, stillNotDone, ref largestDifference);
+                        if (largestDifference > largestDifferenceThisRun)
+                            largestDifferenceThisRun = largestDifference;
                         //If difference is still too big, mark stillNotDone
                         //TODO limit the amount of iterations we will go through
                     }
                 }
-                DrawMdpMap();
+                //Debug.Print(largestDifferenceThisRun.ToString() + "\n");
+                //DrawMdpMap();
+                if (largestDifferenceThisRun == 0)
+                    break;
+                if (largestDifferencePreviousRun == largestDifferenceThisRun)
+                    break;
+                largestDifferencePreviousRun = largestDifferenceThisRun;
             } while (stillNotDone);
         }
 
-        private bool LargestNeighbourValid(bool largestNeigbourValid, int x, int y, int largestNeighbour, bool stillNotDone)
+        private bool LargestNeighbourValid(bool largestNeigbourValid, int x, int y, int largestNeighbour, bool stillNotDone, ref int largestDifference)
         {
             int calculatedValue;
+            largestDifference = 0;
             //Calculate our value
             if (largestNeigbourValid)
             {
@@ -547,6 +556,8 @@ namespace Reference.Strategies.MDP
                         }
                         if (Math.Abs(calculatedValue - _mdpMap[x, y].Value) > 10)
                             stillNotDone = true;
+                        if (Math.Abs(calculatedValue - _mdpMap[x, y].Value) > largestDifference)
+                            largestDifference = Math.Abs(calculatedValue - _mdpMap[x, y].Value);
                         _mdpMap[x, y].Value = calculatedValue;
                         _mdpMap[x, y].ValidValue = true;
                     }
@@ -571,6 +582,8 @@ namespace Reference.Strategies.MDP
                     }
                     if (Math.Abs(calculatedValue - _mdpMap[x, y].Value) > 10)
                         stillNotDone = true;
+                    if (Math.Abs(calculatedValue - _mdpMap[x, y].Value) > largestDifference)
+                        largestDifference = Math.Abs(calculatedValue - _mdpMap[x, y].Value);
                     _mdpMap[x, y].Value = calculatedValue;
                     _mdpMap[x, y].ValidValue = true;
                 }

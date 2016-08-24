@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Reference.Domain.Map.Entities
 {
+    [Serializable]
     public class BombEntity : BaseEntity
     {
         public PlayerEntity Owner { get; set; }

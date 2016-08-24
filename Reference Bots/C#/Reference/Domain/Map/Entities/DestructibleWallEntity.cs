@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Reference.Domain.Map.Entities
 {
+    [Serializable]
     public class DestructibleWallEntity : BaseEntity
     {
         public override int GetPossiblePoints()

@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Reference.Domain.Map.Entities;
 using Reference.Domain.Map.Entities.PowerUps;
 
 namespace Reference.Domain.Map
 {
+    [Serializable]
     public class GameBlock
     {
         public Location Location { get; set; }

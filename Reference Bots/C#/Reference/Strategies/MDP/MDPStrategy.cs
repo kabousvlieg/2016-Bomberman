@@ -30,37 +30,85 @@ namespace Reference.Strategies.MDP
 #if (DEBUG)
             var stopwatch = Stopwatch.StartNew();
 #endif
-            const int rounds = 5;
-            List<GameRound> round = new List<GameRound>(0);
+            const int rounds = 9;
+            int currentRound = 0;
+            var round = new GameRound[rounds];
             //List<MdpTools.PlayersAndMoves> playersMoves;
-            for (var i = 0; i < rounds; i++)
-            {
-                if ((round == null) || (round.Count - 1 < i))
-                {
-                    var utils = new Utils(gameMap, playerKey);
-                    PlayerEntity[] players = new PlayerEntity[4];
-                    utils.getPlayers(ref players);
-                    var mdp = new MdpTools(gameMap, playerKey, players);
-                    var ruleEngine = new RuleEngine(gameMap, players);
 
-                    utils.DrawMap();
+            round[0] = new GameRound(gameMap.Clone() as GameMap, null);
+            while (currentRound < rounds)
+            {
+                //if ((stopwatch.ElapsedMilliseconds > 2000))
+                //{
+                //    round[0].PlayersMoves[0] = MoveDedMovesDown(round[0].PlayersMoves[0]);
+                //    break;
+                //s}
+                if (round[currentRound].PlayersMoves == null)
+                {
+                    Utils utils;
+                    utils = new Utils(round[currentRound].Map, playerKey);
+                    PlayerEntity[] players = new PlayerEntity[4]; //Maximum of 4 players
+                    utils.getPlayers(ref players);
+                    var mdp = new MdpTools(round[currentRound].Map, playerKey, players);
+                    var ruleEngine = new RuleEngine(round[currentRound].Map, players);
+
+                    //utils.DrawMap();
                     while (!mdp.AssignBombValues())
                     {
                     } //while not done
                     mdp.AssignMdpGoals();
                     mdp.CalculateMdp();
-                    mdp.DrawMdpMap();
+                    //mdp.DrawMdpMap();
                     var playerMoves = mdp.CalculateBestMoveFromMdp();
                     ruleEngine.OverrideMdpMoveWithRuleEngine(ref playerMoves, mdp);
-                    round.Add(new GameRound(gameMap, playerMoves));             
-                }            
-                //if move is imded
+                    ruleEngine.EliminateDuplicateMoves(ref playerMoves);
+                    //TODO Eliminate same moves
+                    round[currentRound].PlayersMoves = playerMoves;             
+                }
+
+                Debug.Print("Round " + currentRound + "\n" +
+                    round[currentRound].PlayersMoves[0].BestMove.ToString() + "\n" +
+                    round[currentRound].PlayersMoves[0].SecondMove + "\n" +
+                    round[currentRound].PlayersMoves[0].ThirdMove);
+
                 //if all moves is imded
-                //rollback gamemap, mark bestmove there as imded
-                //if all previous moves is imded
-                //rollback twice 
-                    
-                Utils.tickTheMap(ref gameMap, round[i].PlayersMoves);
+                if ( (round[currentRound].PlayersMoves[0].BestMove == GameCommand.ImDed) &&
+                     (round[currentRound].PlayersMoves[0].SecondMove == GameCommand.ImDed) &&
+                     (round[currentRound].PlayersMoves[0].ThirdMove == GameCommand.ImDed) )
+                {
+                    if (currentRound > 0)
+                    {
+                        round[--currentRound].PlayersMoves[0].BestMove = GameCommand.ImDed;
+                        continue; //Repeat the last round with the next best move
+                    }
+                    else
+                    {
+                        //What the hell now? Game check mate?
+                        return GameCommand.TriggerBomb; //TODO last ditch effort, place bomb or trigger
+                    } 
+                }
+                
+                //Get best non ded move
+                if (round[currentRound].PlayersMoves[0].BestMove == GameCommand.ImDed)
+                {
+                    round[currentRound].PlayersMoves[0] = MoveDedMovesDown(round[currentRound].PlayersMoves[0]);
+                }
+
+                var nextmap = Utils.tickTheMap(round[currentRound].Map.Clone() as GameMap, round[currentRound].PlayersMoves);
+
+                if (round[currentRound].PlayersMoves[0].playerEntity.Killed)
+                {
+                    round[currentRound].PlayersMoves[0].BestMove = GameCommand.ImDed;
+                }
+                else
+                {
+                    if (currentRound + 1 >= rounds) //Yay we survived
+                    {
+                        break;  
+                    }
+                    round[currentRound + 1] = new GameRound(nextmap.Clone() as GameMap, null);
+                    currentRound++;
+                }
             }
 
             if (round[0].PlayersMoves[0].BestMove == GameCommand.ImDed)
@@ -70,6 +118,25 @@ namespace Reference.Strategies.MDP
             //    Assert.Fail("Code overran time of 2 seconds");
 #endif
             return round[0].PlayersMoves[0].BestMove;
+        }
+
+        private MdpTools.PlayersAndMoves MoveDedMovesDown(MdpTools.PlayersAndMoves player)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (player.BestMove == GameCommand.ImDed)
+                {
+                    player.BestMove = player.SecondMove;
+                    player.SecondMove = player.ThirdMove;
+                    player.ThirdMove = GameCommand.ImDed;
+                }
+                if (player.SecondMove == GameCommand.ImDed)
+                {
+                    player.SecondMove = player.ThirdMove;
+                    player.ThirdMove = GameCommand.ImDed;
+                }
+            }
+            return player;
         }
     }
 }

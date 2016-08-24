@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Reference.Domain.Map.Entities
 {
+    [Serializable]
     public abstract class BaseEntity : IEntity
     {
         public Location Location { get; set; }

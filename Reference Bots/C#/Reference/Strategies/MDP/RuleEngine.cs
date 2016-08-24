@@ -22,7 +22,7 @@ namespace Reference.Strategies.MDP
             for (int i = 0; i < player.Count; i++)
             {
                 //Check for survival
-                //Will our bestMdpMove move into explosion
+                //Will our mdpMove move into explosion
                 if (WalkIntoExplosion(player[i].BestMove, player[i].playerEntity))
                     player[i].BestMove = GameCommand.DoNothing;   
                 if (WalkIntoExplosion(player[i].SecondMove, player[i].playerEntity))
@@ -39,27 +39,25 @@ namespace Reference.Strategies.MDP
                         player[i] = OverrideWithNewBestMove(player[i], GameCommand.PlaceBomb);
                     if (CanWeBlowABomb(player[i].BestMove, player[i].playerEntity))
                         player[i] = OverrideWithNewBestMove(player[i], GameCommand.TriggerBomb);
+                    if (CanWeBlowABomb(player[i].SecondMove, player[i].playerEntity))
+                        player[i] = OverrideWithNewSecondMove(player[i], GameCommand.TriggerBomb);
+                    if (CanWeBlowABomb(player[i].ThirdMove, player[i].playerEntity))
+                        player[i] = OverrideWithNewThirdMove(player[i], GameCommand.TriggerBomb);
                 }
             }
         }
 
-        private MdpTools.PlayersAndMoves MoveDedMovesDown(MdpTools.PlayersAndMoves player)
+        public void EliminateDuplicateMoves(ref List<MdpTools.PlayersAndMoves> playerMoves)
         {
-            for (int i = 0; i < 3; i++)
+            foreach (var player in playerMoves)
             {
-                if (player.BestMove == GameCommand.ImDed)
-                {
-                    player.BestMove = player.SecondMove;
-                    player.SecondMove = player.ThirdMove;
+                if (player.SecondMove == player.BestMove)
+                    player.SecondMove = GameCommand.ImDed;
+                if (player.ThirdMove == player.SecondMove)
                     player.ThirdMove = GameCommand.ImDed;
-                }
-                if (player.SecondMove == GameCommand.ImDed)
-                {
-                    player.SecondMove = player.ThirdMove;
+                if (player.ThirdMove == player.BestMove)
                     player.ThirdMove = GameCommand.ImDed;
-                }
             }
-            return player;
         }
 
         private MdpTools.PlayersAndMoves OverrideWithNewBestMove(MdpTools.PlayersAndMoves player, GameCommand command)
@@ -67,6 +65,19 @@ namespace Reference.Strategies.MDP
             player.ThirdMove = player.SecondMove;
             player.SecondMove = player.BestMove;
             player.BestMove = command;
+            return player;
+        }
+
+        private MdpTools.PlayersAndMoves OverrideWithNewSecondMove(MdpTools.PlayersAndMoves player, GameCommand command)
+        {
+            player.ThirdMove = player.SecondMove;
+            player.SecondMove = command;
+            return player;
+        }
+
+        private MdpTools.PlayersAndMoves OverrideWithNewThirdMove(MdpTools.PlayersAndMoves player, GameCommand command)
+        {
+            player.ThirdMove = command;
             return player;
         }
 
@@ -104,7 +115,7 @@ namespace Reference.Strategies.MDP
             return block.Exploding;
         }
 
-        private bool CanWeBlowABomb(GameCommand bestMdpMove, PlayerEntity player)
+        private bool CanWeBlowABomb(GameCommand mdpMove, PlayerEntity player)
         {
             for (var y = 1; y <= _gameMap.MapHeight; y++)
             {
@@ -116,7 +127,7 @@ namespace Reference.Strategies.MDP
                         if (block.Bomb.IsExploding || block.Bomb.BombTimer == 1)
                             continue;
                         //TODO review this decision
-                        if (bestMdpMove == GameCommand.DoNothing || player.BombBag == 0)
+                        if (mdpMove == GameCommand.DoNothing || player.BombBag == 0)
                             return true;
                     }
                 }

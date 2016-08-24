@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -8,7 +11,8 @@ using Reference.Serialization;
 
 namespace Reference.Domain.Map
 {
-    public class GameMap
+    [Serializable]
+    public class GameMap : ICloneable
     {
         public int MapSeed { get; set; }
         public int MapHeight { get; set; }
@@ -32,6 +36,17 @@ namespace Reference.Domain.Map
             {
                 Binder = new EntityTypeNameHandling()
             });
+        }
+
+        public object Clone()
+        {
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                IFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(memoryStream, this);
+                memoryStream.Seek(0, SeekOrigin.Begin);
+                return formatter.Deserialize(memoryStream) as GameMap;
+            }
         }
     }
 }

@@ -45,6 +45,12 @@ namespace Reference.Strategies.MDP.Tests
                         case '$':
                             assignSuperPowerUp(gm, x, y);
                             break;
+                        case 'a':
+                        case 'b':
+                        case 'c':
+                        case 'd':
+                            assignPlayerWithBomb(map, gm, x, y, 'z', bombRange);
+                            break;
                         case 'A':
                         case 'B':
                         case 'C':
@@ -225,7 +231,7 @@ namespace Reference.Strategies.MDP.Tests
                     },
                     BombBag = 1,
                     BombRadius = bombRange,
-                    Key = map[y][x],
+                    Key = char.ToUpper(map[y][x]),
                     Killed = false,
                     Name = "Player",
                     Points = 1
@@ -234,6 +240,59 @@ namespace Reference.Strategies.MDP.Tests
                 {
                     X = x+1,
                     Y = y+1
+                }
+            };
+        }
+
+        private static void assignPlayerWithBomb(char[][] map, GameMap gm, int x, int y, char key, int bombRange)
+        {
+            key -= 'A'; //Translate from 'r' to '1';
+            gm.GameBlocks[x, y] = new GameBlock()
+            {
+                Entity = new PlayerEntity()
+                {
+                    Location = new Location()
+                    {
+                        X = x + 1,
+                        Y = y + 1
+                    },
+                    BombBag = 1,
+                    BombRadius = bombRange,
+                    Key = char.ToUpper(map[y][x]),
+                    Killed = false,
+                    Name = "Player",
+                    Points = 1
+                },
+                Bomb = new BombEntity()
+                {
+                    BombRadius = bombRange,
+                    BombTimer = (int)char.GetNumericValue(key),
+                    IsExploding = false,
+                    Points = 0,
+                    Location = new Location()
+                    {
+                        X = x,
+                        Y = y
+                    },
+                    Owner = new PlayerEntity()
+                    {
+                        Location = new Location()
+                        {
+                            X = x + 1,
+                            Y = y + 1
+                        },
+                        BombBag = 1,
+                        BombRadius = bombRange,
+                        Key = 'A',
+                        Killed = false,
+                        Name = "Player A",
+                        Points = 1
+                    }
+                },
+                Location = new Location()
+                {
+                    X = x + 1,
+                    Y = y + 1
                 }
             };
         }

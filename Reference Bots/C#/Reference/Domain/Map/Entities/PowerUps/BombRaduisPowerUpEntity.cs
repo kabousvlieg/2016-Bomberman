@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Reference.Domain.Map.Entities.PowerUps
 {
+    [Serializable]
     public class BombRaduisPowerUpEntity : BaseEntity, IPowerUp
     {
         public override int GetPossiblePoints()

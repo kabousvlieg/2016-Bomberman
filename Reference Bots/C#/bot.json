@@ -1,7 +1,7 @@
 {
-	"Author":"John Doe",
-    "Email":"john.doe@example.com",
-    "NickName" :"John",
+	"Author":"Kobus Coetzee",
+    "Email":"kobus@embeddedfool.net",
+    "NickName" :"embeddedFool",
     "BotType": 0,
     "ProjectLocation" : "",
     "RunFile" : "Reference\\bin\\Debug\\Reference.exe"
