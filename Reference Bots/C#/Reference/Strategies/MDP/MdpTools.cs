@@ -17,6 +17,8 @@ namespace Reference.Strategies.MDP
         private readonly int EnemyBombPenalty = 90;
         //private readonly int BombValue = -100;
         private readonly int PathWhenBombValue = 5000;
+        private readonly int PathWhenMyBombValue = 500;
+        private readonly int PathWhenEnemyBombValue = 50;
 
 
         public enum MdpTypes
@@ -312,6 +314,8 @@ namespace Reference.Strategies.MDP
                     MdpMap[x, y].Type = MdpTypes.Bomb;
                     //_mdpMap[x, y].value = BombValue;
                     //_mdpMap[x, y].validValue = true;
+                    if(escape)
+                        return;
                 }
                 else if (block.Entity is BombBagPowerUpEntity)
                 {
@@ -355,11 +359,18 @@ namespace Reference.Strategies.MDP
                     MdpMap[x, y].ValidItemOnBlockValue = true;
                 }
             }
+            if (block.Bomb != null)
+            {
+                MdpMap[x, y].Type = MdpTypes.Bomb;
+                MdpMap[x, y].ValidValue = false;
+                if (escape)
+                    return;
+            }
             if (escape)
             {
+                MdpMap[x, y].Type = MdpTypes.Path;
                 if ((!MdpMap[x, y].InRangeOfMyBomb) && (!MdpMap[x, y].InRangeOfEnemyBomb))
                 {
-                    MdpMap[x, y].Type = MdpTypes.Path;
                     if (!MdpMap[x, y].ValidItemOnBlockValue)
                     {
                         MdpMap[x, y].ValidItemOnBlockValue = true;
@@ -370,9 +381,29 @@ namespace Reference.Strategies.MDP
                         MdpMap[x, y].ItemOnBlockValue += PathWhenBombValue;
                     }
                 }
-                else
+                else if (MdpMap[x, y].InRangeOfMyBomb)
                 {
-                    MdpMap[x, y].Type = MdpTypes.Path;
+                    if (!MdpMap[x, y].ValidItemOnBlockValue)
+                    {
+                        MdpMap[x, y].ValidItemOnBlockValue = true;
+                        MdpMap[x, y].ItemOnBlockValue = PathWhenMyBombValue * MdpMap[x, y].BombCountDown;
+                    }
+                    else
+                    {
+                        MdpMap[x, y].ItemOnBlockValue += PathWhenMyBombValue * MdpMap[x, y].BombCountDown;
+                    }
+                }
+                else if (MdpMap[x, y].InRangeOfEnemyBomb)
+                {
+                    if (!MdpMap[x, y].ValidItemOnBlockValue)
+                    {
+                        MdpMap[x, y].ValidItemOnBlockValue = true;
+                        MdpMap[x, y].ItemOnBlockValue = PathWhenEnemyBombValue * MdpMap[x, y].BombCountDown;
+                    }
+                    else
+                    {
+                        MdpMap[x, y].ItemOnBlockValue += PathWhenEnemyBombValue * MdpMap[x, y].BombCountDown;
+                    }
                 }
             }
         }
@@ -403,7 +434,8 @@ namespace Reference.Strategies.MDP
                     new ValuesAndMoves(int.MinValue, GameCommand.MoveLeft),
                     new ValuesAndMoves(int.MinValue, GameCommand.MoveRight),
                     new ValuesAndMoves(int.MinValue, GameCommand.MoveUp),
-                    new ValuesAndMoves(int.MinValue, GameCommand.MoveDown)
+                    new ValuesAndMoves(int.MinValue, GameCommand.MoveDown),
+                    new ValuesAndMoves(int.MinValue, GameCommand.DoNothing)
                 };
                 if (player.playerEntity.Location.X > 1)
                 {
@@ -429,6 +461,7 @@ namespace Reference.Strategies.MDP
                     var yoffset = player.playerEntity.Location.Y + 1;
                     largestMdpValues[3] = new ValuesAndMoves(isBestMoveThisWay(xoffset, yoffset, player.playerEntity), GameCommand.MoveDown);
                 }
+                largestMdpValues[4] = new ValuesAndMoves(isBestMoveThisWay(player.playerEntity.Location.X, player.playerEntity.Location.Y, player.playerEntity), GameCommand.DoNothing);
                 player.BestMove = GetLargestAndRemove(largestMdpValues);
                 player.SecondMove = GetLargestAndRemove(largestMdpValues);
                 player.ThirdMove = GetLargestAndRemove(largestMdpValues);

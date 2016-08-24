@@ -30,7 +30,7 @@ namespace Reference.Strategies.MDP
 #if (DEBUG)
             var stopwatch = Stopwatch.StartNew();
 #endif
-            const int rounds = 9;
+            const int rounds = 10;
             int currentRound = 0;
             var round = new GameRound[rounds];
             //List<MdpTools.PlayersAndMoves> playersMoves;
@@ -66,10 +66,10 @@ namespace Reference.Strategies.MDP
                     round[currentRound].PlayersMoves = playerMoves;             
                 }
 
-                Debug.Print("Round " + currentRound + "\n" +
-                    round[currentRound].PlayersMoves[0].BestMove.ToString() + "\n" +
-                    round[currentRound].PlayersMoves[0].SecondMove + "\n" +
-                    round[currentRound].PlayersMoves[0].ThirdMove);
+                //Debug.Print("Round " + currentRound + "\n" +
+                //    round[currentRound].PlayersMoves[0].BestMove.ToString() + "\n" +
+                //    round[currentRound].PlayersMoves[0].SecondMove + "\n" +
+                //    round[currentRound].PlayersMoves[0].ThirdMove);
 
                 //if all moves is imded
                 if ( (round[currentRound].PlayersMoves[0].BestMove == GameCommand.ImDed) &&

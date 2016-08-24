@@ -164,6 +164,16 @@ namespace Reference.Strategies.MDP
             //Debug.WriteLine("Before tick:");
             //DrawMap(gameMap);
             var nextMap = gameMap;
+
+            for (var y = 1; y <= nextMap.MapHeight; y++)
+            {
+                for (var x = 1; x <= nextMap.MapWidth; x++)
+                {
+                    var block = nextMap.GetBlockAtLocation(x, y);
+                    block.Exploding = false;
+                }
+            }
+
             foreach (var player in playerMoves)
             {
                 //TODO Still need to do collision detection and mitigation here
@@ -270,16 +280,16 @@ namespace Reference.Strategies.MDP
                     {
                         if (block.Bomb.IsExploding)
                         {
-                            //TODO Calculate range of bomb
-                            nextMap.GameBlocks[x - 1, y - 1].Bomb = null;
                             foreach (var player in playerMoves)
                             {
+                                CalculateRangeOfBomb(gameMap, x, y, block, ref player.playerEntity);
                                 if ((player.playerEntity.Location.X == x) &&
                                     (player.playerEntity.Location.Y == y))
                                 {
                                     player.playerEntity.Killed = true;
                                 }
                             }
+                            nextMap.GameBlocks[x - 1, y - 1].Bomb = null;
                         }
                         else if (block.Bomb.BombTimer == 1)
                         {
@@ -287,7 +297,7 @@ namespace Reference.Strategies.MDP
                             nextMap.GameBlocks[x - 1, y - 1].Bomb.BombTimer--;
                             foreach (var player in playerMoves) //You will be dead the next round
                             {
-                                //TODO Calculate range of bomb
+                                CalculateRangeOfBomb(gameMap, x, y, block, ref player.playerEntity);
                                 if ((player.playerEntity.Location.X == x) &&
                                     (player.playerEntity.Location.Y == y))
                                 {
@@ -308,8 +318,9 @@ namespace Reference.Strategies.MDP
         }
 
 
-        private void CalculateRangeOfBomb(int x, int y, GameBlock block, ref bool done)
+        private static void CalculateRangeOfBomb(GameMap gameMap, int x, int y, GameBlock block, ref PlayerEntity player)
         {
+            //TODO Bombchains
             var bombBlockedXMinusDirection = false;
             var bombBlockedXPlusDirection = false;
             var bombBlockedYMinusDirection = false;
@@ -320,41 +331,41 @@ namespace Reference.Strategies.MDP
                 {
                     var xrange = x - range;
                     var yrange = y;
-                    bombBlockedXMinusDirection = MarkUnlessBombBlocked(xrange, yrange,
+                    bombBlockedXMinusDirection = MarkUnlessBombBlocked(gameMap, xrange, yrange,
                                                                        bombBlockedXMinusDirection,
-                                                                       ref done);
+                                                                       player);
                 }
-                if ((x + range < _gameMap.MapWidth) && (!bombBlockedXPlusDirection))
+                if ((x + range < gameMap.MapWidth) && (!bombBlockedXPlusDirection))
                 {
                     var xrange = x + range;
                     var yrange = y;
-                    bombBlockedXPlusDirection = MarkUnlessBombBlocked(xrange, yrange,
+                    bombBlockedXPlusDirection = MarkUnlessBombBlocked(gameMap, xrange, yrange,
                                                                       bombBlockedXPlusDirection,
-                                                                      ref done);
+                                                                      player);
                 }
                 if ((y - range > 1) && (!bombBlockedYMinusDirection))
                 {
                     var xrange = x;
                     var yrange = y - range;
-                    bombBlockedYMinusDirection = MarkUnlessBombBlocked(xrange, yrange,
+                    bombBlockedYMinusDirection = MarkUnlessBombBlocked(gameMap, xrange, yrange,
                                                                        bombBlockedYMinusDirection,
-                                                                       ref done);
+                                                                       player);
                 }
-                if ((y + range < _gameMap.MapHeight) && (!bombBlockedYPlusDirection))
+                if ((y + range < gameMap.MapHeight) && (!bombBlockedYPlusDirection))
                 {
                     var xrange = x;
                     var yrange = y + range;
-                    bombBlockedYPlusDirection = MarkUnlessBombBlocked(xrange, yrange,
+                    bombBlockedYPlusDirection = MarkUnlessBombBlocked(gameMap, xrange, yrange,
                                                                       bombBlockedYPlusDirection,
-                                                                      ref done);
+                                                                      player);
                 }
             }
         }
 
-        private bool MarkUnlessBombBlocked(int xrange, int yrange, bool bombBlockedDirection, ref bool done)
+        private static bool MarkUnlessBombBlocked(GameMap gameMap, int xrange, int yrange, bool bombBlockedDirection, PlayerEntity player)
         {
             GameBlock blockInRange;
-            blockInRange = _gameMap.GetBlockAtLocation(xrange, yrange);
+            blockInRange = gameMap.GetBlockAtLocation(xrange, yrange);
             if (blockInRange.Entity != null)
             {
                 if ((blockInRange.Entity is DestructibleWallEntity) ||
@@ -364,33 +375,10 @@ namespace Reference.Strategies.MDP
                 {
                     bombBlockedDirection = true;
                 }
-                else
-                {
-                    if (myBomb)
-                        _mdpMap[xrange, yrange].InRangeOfMyBomb = true;
-                    else
-                        _mdpMap[xrange, yrange].InRangeOfEnemyBomb = true;
-
-                    if (_mdpMap[xrange, yrange].BombCountDown > bombTimer)
-                    {
-                        _mdpMap[xrange, yrange].BombCountDown = bombTimer;
-                        done = false;
-                    }
-                }
             }
-            else
-            {
-                if (myBomb)
-                    _mdpMap[xrange, yrange].InRangeOfMyBomb = true;
-                else
-                    _mdpMap[xrange, yrange].InRangeOfEnemyBomb = true;
-
-                if (_mdpMap[xrange, yrange].BombCountDown > bombTimer)
-                {
-                    _mdpMap[xrange, yrange].BombCountDown = bombTimer;
-                    done = false;
-                }
-            }
+            blockInRange.Exploding = true;
+            if ((player.Location.X == xrange) && (player.Location.Y == yrange))
+                player.Killed = true;
             return bombBlockedDirection;
         }
     }

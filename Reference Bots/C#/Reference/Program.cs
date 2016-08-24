@@ -47,16 +47,16 @@ namespace Reference
 
                 var map = GameMap.FromJson(inputMap);
                 GameCommand command;
-                if (playerKey == 'A')
+                //if (playerKey == 'A')
                 {
                     var gameStrategy = new MdpStrategy();
                     command = gameStrategy.ExecuteStrategy(map, playerKey);
                 }
-                else
-                {
-                    var gameStrategy = new AStarStrategy();
-                    command = gameStrategy.ExecuteStrategy(map, playerKey);
-                }
+                //else
+                //{
+                //    var gameStrategy = new AStarStrategy();
+                //    command = gameStrategy.ExecuteStrategy(map, playerKey);
+                //}
                
 
                 Console.WriteLine("Sending Back command " + command);
