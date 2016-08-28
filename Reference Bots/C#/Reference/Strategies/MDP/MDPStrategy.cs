@@ -27,9 +27,7 @@ namespace Reference.Strategies.MDP
 
         public GameCommand ExecuteStrategy(GameMap gameMap, char playerKey)
         {
-#if (DEBUG)
             var stopwatch = Stopwatch.StartNew();
-#endif
             const int rounds = 10;
             int currentRound = 0;
             var round = new GameRound[rounds];
@@ -38,11 +36,11 @@ namespace Reference.Strategies.MDP
             round[0] = new GameRound(gameMap.Clone() as GameMap, null);
             while (currentRound < rounds)
             {
-                //if ((stopwatch.ElapsedMilliseconds > 2000))
-                //{
-                //    round[0].PlayersMoves[0] = MoveDedMovesDown(round[0].PlayersMoves[0]);
-                //    break;
-                //s}
+                if ((stopwatch.ElapsedMilliseconds > 2000))
+                {
+                    round[0].PlayersMoves[0] = MoveDedMovesDown(round[0].PlayersMoves[0]);
+                    break;
+                }
                 if (round[currentRound].PlayersMoves == null)
                 {
                     Utils utils;
