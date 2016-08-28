@@ -27,9 +27,7 @@ namespace Reference.Strategies.MDP
 
         public GameCommand ExecuteStrategy(GameMap gameMap, char playerKey)
         {
-#if (DEBUG)
             var stopwatch = Stopwatch.StartNew();
-#endif
             const int rounds = 10;
             int currentRound = 0;
             var round = new GameRound[rounds];
@@ -42,7 +40,7 @@ namespace Reference.Strategies.MDP
                 //{
                 //    round[0].PlayersMoves[0] = MoveDedMovesDown(round[0].PlayersMoves[0]);
                 //    break;
-                //s}
+                //}
                 if (round[currentRound].PlayersMoves == null)
                 {
                     Utils utils;
@@ -113,10 +111,7 @@ namespace Reference.Strategies.MDP
 
             if (round[0].PlayersMoves[0].BestMove == GameCommand.ImDed)
                 round[0].PlayersMoves[0].BestMove = GameCommand.TriggerBomb; //TODO last ditch effort, place bomb or trigger
-#if (DEBUG)
-            //if ((stopwatch.ElapsedMilliseconds > 2000))
-            //    Assert.Fail("Code overran time of 2 seconds");
-#endif
+
             return round[0].PlayersMoves[0].BestMove;
         }
 

@@ -680,79 +680,83 @@ namespace Reference.Strategies.MDP
 
         public void DrawMdpMap(bool printSign = false)
         {
-            //Scale output to biggest value
-            var largestValue = int.MinValue;
-            var smallestValue = int.MaxValue;
-            for (var y = 1; y <= _gameMap.MapHeight; y++)
-            {
-                for (var x = 1; x <= _gameMap.MapWidth; x++)
-                {
-                    if ((_mdpMap[x, y].ValidValue) &&
-                        (_mdpMap[x, y].Type == MdpTypes.Path) &&
-                        (Math.Abs(_mdpMap[x, y].Value) > largestValue))
-                    {
-                        largestValue = Math.Abs(_mdpMap[x, y].Value);
-                    }
-                    if ((_mdpMap[x, y].ValidValue) &&
-                        (_mdpMap[x, y].Type == MdpTypes.Path) &&
-                        (Math.Abs(_mdpMap[x, y].Value) < smallestValue))
-                    {
-                        smallestValue = Math.Abs(_mdpMap[x, y].Value);
-                    }
-                }
-            }
+            ////Scale output to biggest value
+            //var largestValue = int.MinValue;
+            //var smallestValue = int.MaxValue;
+            //for (var y = 1; y <= _gameMap.MapHeight; y++)
+            //{
+            //    for (var x = 1; x <= _gameMap.MapWidth; x++)
+            //    {
+            //        if ((_mdpMap[x, y].ValidValue) &&
+            //            (_mdpMap[x, y].Type == MdpTypes.Path) &&
+            //            (Math.Abs(_mdpMap[x, y].Value) > largestValue))
+            //        {
+            //            largestValue = Math.Abs(_mdpMap[x, y].Value);
+            //        }
+            //        if ((_mdpMap[x, y].ValidValue) &&
+            //            (_mdpMap[x, y].Type == MdpTypes.Path) &&
+            //            (Math.Abs(_mdpMap[x, y].Value) < smallestValue))
+            //        {
+            //            smallestValue = Math.Abs(_mdpMap[x, y].Value);
+            //        }
+            //    }
+            //}
 
-            Debug.WriteLine("");
-            Debug.WriteLine("");
-            if (printSign)
-                Debug.WriteLine(" 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2");
-            else
-                Debug.WriteLine(" 1234567890123456789012");
-            for (var y = 1; y <= _gameMap.MapHeight; y++)
-            {
-                Debug.Write(y % 9);
-                for (var x = 1; x <= _gameMap.MapWidth; x++)
-                {
-                    var blk = _mdpMap[x, y];
-                    if (_mdpMap[x, y].Type == MdpTypes.OtherPlayer)
-                        Debug.Write(printSign ? "BB" : "B");
-                    else if (_mdpMap[x, y].Type == MdpTypes.Indestructable)
-                        Debug.Write(printSign ? "##" : "#");
-                    else if ((_mdpMap[x, y].ValidItemOnBlockValue) && (_mdpMap[x, y].Type != MdpTypes.Path))
-                    {
-                        if (_mdpMap[x, y].ItemOnBlockValue == PowerUpValue)
-                            Debug.Write(printSign ? "!!" : "!");
-                        else if (_mdpMap[x, y].ItemOnBlockValue == SuperPowerUpValue)
-                            Debug.Write(printSign ? "$$" : "$");
-                        else if (_mdpMap[x, y].ItemOnBlockValue == PathWhenBombValue)
-                            Debug.Write(printSign ? ".." : ".");
-                        else if (_mdpMap[x, y].ItemOnBlockValue == WallValue)
-                            Debug.Write(printSign ? "++" : "+");
-                    }
-                    else if (_mdpMap[x, y].ValidValue == false)
-                        Debug.Write(printSign ? "??" : "?");
-                    else
-                    {
-                        if (Math.Abs(_mdpMap[x, y].Value) <= largestValue)
-                        {
-                            //Console.ForegroundColor = _mdpMap[x, y].value > 0 ? ConsoleColor.Red : ConsoleColor.Yellow;
-                            if (printSign)
-                                Debug.Write(_mdpMap[x, y].Value > 0 ? "-" : "=");
-                            var largestDiff = Math.Abs(largestValue) - Math.Abs(smallestValue);
-                            var thisValueOverSmallest = Math.Abs(_mdpMap[x, y].Value) - Math.Abs(smallestValue);
-                            if (largestDiff != 0)
-                                Debug.Write(((int)(Math.Abs(thisValueOverSmallest) * 9 / Math.Abs(largestDiff))).ToString());
-                            else
-                                Debug.Write(printSign ? "??" : "?");
-                            //Console.ForegroundColor = ConsoleColor.White;
-                        }
-                        else
-                            Debug.Write("??");
-                    }
-                }
-                Debug.WriteLine("");
-            }
-            Debug.WriteLine("");
+            //////Debug.WriteLine("");
+            //////Debug.WriteLine("");
+            //if (printSign)
+            //{ 
+            //    ////Debug.WriteLine(" 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2");
+            //}
+            //else
+            //{ 
+            //    ////Debug.WriteLine(" 1234567890123456789012");
+            //}
+            //for (var y = 1; y <= _gameMap.MapHeight; y++)
+            //{
+            //    //Debug.Write(y % 9);
+            //    for (var x = 1; x <= _gameMap.MapWidth; x++)
+            //    {
+            //        var blk = _mdpMap[x, y];
+            //        if (_mdpMap[x, y].Type == MdpTypes.OtherPlayer)
+            //            //Debug.Write(printSign ? "BB" : "B");
+            //        else if (_mdpMap[x, y].Type == MdpTypes.Indestructable)
+            //            //Debug.Write(printSign ? "##" : "#");
+            //        else if ((_mdpMap[x, y].ValidItemOnBlockValue) && (_mdpMap[x, y].Type != MdpTypes.Path))
+            //        {
+            //            if (_mdpMap[x, y].ItemOnBlockValue == PowerUpValue)
+            //                //Debug.Write(printSign ? "!!" : "!");
+            //            else if (_mdpMap[x, y].ItemOnBlockValue == SuperPowerUpValue)
+            //                //Debug.Write(printSign ? "$$" : "$");
+            //            else if (_mdpMap[x, y].ItemOnBlockValue == PathWhenBombValue)
+            //                //Debug.Write(printSign ? ".." : ".");
+            //            else if (_mdpMap[x, y].ItemOnBlockValue == WallValue)
+            //                //Debug.Write(printSign ? "++" : "+");
+            //        }
+            //        else if (_mdpMap[x, y].ValidValue == false)
+            //            //Debug.Write(printSign ? "??" : "?");
+            //        else
+            //        {
+            //            if (Math.Abs(_mdpMap[x, y].Value) <= largestValue)
+            //            {
+            //                //Console.ForegroundColor = _mdpMap[x, y].value > 0 ? ConsoleColor.Red : ConsoleColor.Yellow;
+            //                if (printSign)
+            //                    //Debug.Write(_mdpMap[x, y].Value > 0 ? "-" : "=");
+            //                var largestDiff = Math.Abs(largestValue) - Math.Abs(smallestValue);
+            //                var thisValueOverSmallest = Math.Abs(_mdpMap[x, y].Value) - Math.Abs(smallestValue);
+            //                if (largestDiff != 0)
+            //                    //Debug.Write(((int)(Math.Abs(thisValueOverSmallest) * 9 / Math.Abs(largestDiff))).ToString());
+            //                else
+            //                    //Debug.Write(printSign ? "??" : "?");
+            //                //Console.ForegroundColor = ConsoleColor.White;
+            //            }
+            //            else
+            //                //Debug.Write("??");
+            //        }
+            //    }
+            //    ////Debug.WriteLine("");
+            //}
+            //////Debug.WriteLine("");
         }
 
         public bool areWeInRangeOfBomb(PlayerEntity player)

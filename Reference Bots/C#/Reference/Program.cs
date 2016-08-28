@@ -25,9 +25,10 @@ namespace Reference
                 string inputMap;
                 if (args == null || args.Length == 0)
                 {
-                    playerKey = 'A';
-                    outputLocation = Path.Combine(@"C:\Kobus\Werk\2016-Bomberman-master\Game Engine\Bomberman\bin\Debug\Replays\458149325\0\", playerKey.ToString());
-                    var jsonFileLocation = @"C:\Kobus\Werk\2016-Bomberman-master\Game Engine\Bomberman\bin\Debug\Replays\458149325\0\state.json";
+                    Console.WriteLine("No player args were provided from the game engine");
+                    playerKey = 'B';
+                    outputLocation = Path.Combine(@"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Bomberman\bin\Debug\Replays\match-410\142\B\", playerKey.ToString());
+                    var jsonFileLocation = @"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Bomberman\bin\Debug\Replays\match-410\142\state.json";
                     if ( File.Exists(jsonFileLocation))
                     {
                         inputMap = File.ReadAllText(jsonFileLocation);
@@ -47,23 +48,23 @@ namespace Reference
 
                 var map = GameMap.FromJson(inputMap);
                 GameCommand command;
-                //if (playerKey == 'A')
-                {
+                //if (playerKey == 'B')
+                //{
                     var gameStrategy = new MdpStrategy();
                     command = gameStrategy.ExecuteStrategy(map, playerKey);
-                }
+                //}
                 //else
                 //{
                 //    var gameStrategy = new AStarStrategy();
                 //    command = gameStrategy.ExecuteStrategy(map, playerKey);
                 //}
-               
+
 
                 Console.WriteLine("Sending Back command " + command);
                 File.WriteAllText(Path.Combine(outputLocation, "move.txt"), ((int)command).ToString());
                 stopwatch.Stop();
-                Debug.WriteLine("[BOT]\tBot finished in {0} ms.", stopwatch.ElapsedMilliseconds);
-                Debug.WriteLine("[BOT]\tBot moved " + command.ToString());
+                ////Debug.WriteLine("[BOT]\tBot finished in {0} ms.", stopwatch.ElapsedMilliseconds);
+                ////Debug.WriteLine("[BOT]\tBot moved " + command.ToString());
                 if (stopwatch.ElapsedMilliseconds > 2000)
                 {
                     //System.Windows.Forms.MessageBox.Show("Overran time limit " + stopwatch.ElapsedMilliseconds.ToString() + "ms");
@@ -73,7 +74,7 @@ namespace Reference
             }
             catch (Exception ex)
             {
-                Console.Write(ex);
+                //Console.Write(ex);
 
                 return -1;
             }

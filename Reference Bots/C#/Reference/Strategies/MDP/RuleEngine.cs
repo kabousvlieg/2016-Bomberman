@@ -52,7 +52,13 @@ namespace Reference.Strategies.MDP
             foreach (var player in playerMoves)
             {
                 if (player.SecondMove == player.BestMove)
-                    player.SecondMove = GameCommand.ImDed;
+                {
+                    if (player.ThirdMove != player.BestMove)
+                        player.SecondMove = player.ThirdMove;
+                    else
+                        player.SecondMove = GameCommand.ImDed;
+                }
+                    
                 if (player.ThirdMove == player.SecondMove)
                     player.ThirdMove = GameCommand.ImDed;
                 if (player.ThirdMove == player.BestMove)
