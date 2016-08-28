@@ -53,12 +53,12 @@ namespace Reference.Strategies.MDP
 
         public void DrawMap()
         {
-            ////Debug.WriteLine("");
-            ////Debug.WriteLine("");
-            ////Debug.WriteLine(" 1234567890123456789012");
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+            Debug.WriteLine(" 1234567890123456789012");
             for (var y = 1; y <= _gameMap.MapHeight; y++)
             {
-                //Debug.Write(y%10);
+                Debug.Write(y%10);
                 for (var x = 1; x <= _gameMap.MapWidth; x++)
                 {
                     var block = _gameMap.GetBlockAtLocation(x, y);
@@ -66,102 +66,102 @@ namespace Reference.Strategies.MDP
                     {
                         if (block.Entity is PlayerEntity)
                         {
-                            //Debug.Write(Char.ToLower((block.Entity as PlayerEntity).Key));
+                            Debug.Write(Char.ToLower((block.Entity as PlayerEntity).Key));
                         }
                         else
-                            //Debug.Write(block.Bomb.BombTimer);
+                            Debug.Write(block.Bomb.BombTimer);
                     }
                     else if (block.Entity != null)
                     {
                         if (block.Entity is DestructibleWallEntity)
-                            //Debug.Write("+");
+                            Debug.Write("+");
                         else if (block.Entity is IndestructibleWallEntity)
-                            //Debug.Write("#");
+                            Debug.Write("#");
                         else if (block.Entity is PlayerEntity)
-                            //Debug.Write((block.Entity as PlayerEntity).Key);
+                            Debug.Write((block.Entity as PlayerEntity).Key);
                         else if (block.Entity is BombBagPowerUpEntity)
-                            //Debug.Write("&");
+                            Debug.Write("&");
                         else if (block.Entity is BombRaduisPowerUpEntity)
-                            //Debug.Write("!");
+                            Debug.Write("!");
                         else if (block.Entity is SuperPowerUp)
-                            //Debug.Write("$");
+                            Debug.Write("$");
                         else
-                            //Debug.Write(" ");
+                            Debug.Write(" ");
                     }
                     else if (block.Exploding)
-                        //Debug.Write("*");
+                        Debug.Write("*");
                     else if (block.PowerUp != null)
                     {
                         if (block.PowerUp is BombBagPowerUpEntity)
-                            //Debug.Write("!");
+                            Debug.Write("!");
                         else if (block.PowerUp is BombRaduisPowerUpEntity)
-                            //Debug.Write("&");
+                            Debug.Write("&");
                         else if (block.PowerUp is SuperPowerUp)
-                            //Debug.Write("$");
+                            Debug.Write("$");
                     }
-                    else //Debug.Write(" ");
+                    else Debug.Write(" ");
                 }
-                ////Debug.WriteLine("");
+                Debug.WriteLine("");
             }
         }
 
         public static void DrawMap(GameMap gameMap)
         {
-            //////Debug.WriteLine("");
-            //////Debug.WriteLine("");
-            //////Debug.WriteLine(" 1234567890123456789012");
-            //for (var y = 1; y <= gameMap.MapHeight; y++)
-            //{
-            //    //Debug.Write(y % 10);
-            //    for (var x = 1; x <= gameMap.MapWidth; x++)
-            //    {
-            //        var block = gameMap.GetBlockAtLocation(x, y);
-            //        if (block.Bomb != null)
-            //        {
-            //            if (block.Entity is PlayerEntity)
-            //            {
-            //                //Debug.Write(Char.ToLower((block.Entity as PlayerEntity).Key));
-            //            }
-            //            else
-            //                //Debug.Write(block.Bomb.BombTimer);
-            //        }
-            //        else if (block.Entity != null)
-            //        {
-            //            if (block.Entity is DestructibleWallEntity)
-            //                //Debug.Write("+");
-            //            else if (block.Entity is IndestructibleWallEntity)
-            //                //Debug.Write("#");
-            //            else if (block.Entity is PlayerEntity)
-            //                //Debug.Write((block.Entity as PlayerEntity).Key);
-            //            else if (block.Entity is BombBagPowerUpEntity)
-            //                //Debug.Write("&");
-            //            else if (block.Entity is BombRaduisPowerUpEntity)
-            //                //Debug.Write("!");
-            //            else if (block.Entity is SuperPowerUp)
-            //                //Debug.Write("$");
-            //            else
-            //                //Debug.Write(" ");
-            //        }
-            //        else if (block.Exploding)
-            //            //Debug.Write("*");
-            //        else if (block.PowerUp != null)
-            //        {
-            //            if (block.PowerUp is BombBagPowerUpEntity)
-            //                //Debug.Write("!");
-            //            else if (block.PowerUp is BombRaduisPowerUpEntity)
-            //                //Debug.Write("&");
-            //            else if (block.PowerUp is SuperPowerUp)
-            //                //Debug.Write("$");
-            //        }
-            //        else //Debug.Write(" ");
-            //    }
-            //    ////Debug.WriteLine("");
-            //}
+            Debug.WriteLine("");
+            Debug.WriteLine("");
+            Debug.WriteLine(" 1234567890123456789012");
+            for (var y = 1; y <= gameMap.MapHeight; y++)
+            {
+                Debug.Write(y % 10);
+                for (var x = 1; x <= gameMap.MapWidth; x++)
+                {
+                    var block = gameMap.GetBlockAtLocation(x, y);
+                    if (block.Bomb != null)
+                    {
+                        if (block.Entity is PlayerEntity)
+                        {
+                            Debug.Write(Char.ToLower((block.Entity as PlayerEntity).Key));
+                        }
+                        else
+                            Debug.Write(block.Bomb.BombTimer);
+                    }
+                    else if (block.Entity != null)
+                    {
+                        if (block.Entity is DestructibleWallEntity)
+                            Debug.Write("+");
+                        else if (block.Entity is IndestructibleWallEntity)
+                            Debug.Write("#");
+                        else if (block.Entity is PlayerEntity)
+                            Debug.Write((block.Entity as PlayerEntity).Key);
+                        else if (block.Entity is BombBagPowerUpEntity)
+                            Debug.Write("&");
+                        else if (block.Entity is BombRaduisPowerUpEntity)
+                            Debug.Write("!");
+                        else if (block.Entity is SuperPowerUp)
+                            Debug.Write("$");
+                        else
+                            Debug.Write(" ");
+                    }
+                    else if (block.Exploding)
+                        Debug.Write("*");
+                    else if (block.PowerUp != null)
+                    {
+                        if (block.PowerUp is BombBagPowerUpEntity)
+                            Debug.Write("!");
+                        else if (block.PowerUp is BombRaduisPowerUpEntity)
+                            Debug.Write("&");
+                        else if (block.PowerUp is SuperPowerUp)
+                            Debug.Write("$");
+                    }
+                    else Debug.Write(" ");
+                }
+                Debug.WriteLine("");
+            }
         }
 
         public static GameMap tickTheMap(GameMap gameMap, List<MdpTools.PlayersAndMoves> playerMoves)
         {
-            //////Debug.WriteLine("Before tick:");
+            //Debug.WriteLine("Before tick:");
             //DrawMap(gameMap);
             var nextMap = gameMap;
 
@@ -312,7 +312,7 @@ namespace Reference.Strategies.MDP
                     }
                 }
             }
-            //////Debug.WriteLine("After tick:");
+            //Debug.WriteLine("After tick:");
             //DrawMap(nextMap);
             return nextMap;
         }
