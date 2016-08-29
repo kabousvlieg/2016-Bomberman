@@ -17,12 +17,13 @@ namespace Reference.Strategies.MDP
             _gameMap = gameMap;
         }
 
-        public void OverrideMdpMoveWithRuleEngine(ref List<MdpTools.PlayersAndMoves> player, MdpTools mdp)
+        public void OverrideMdpMoveWithRuleEngine(ref List<MdpTools.PlayersAndMoves> player, MdpTools mdp, bool endGame)
         {
             for (int i = 0; i < player.Count; i++)
             {
                 //Check for survival
                 //Will our mdpMove move into explosion
+                //TODO Review if we shouldn't then rather take the second or third best move???
                 if (WalkIntoExplosion(player[i].BestMove, player[i].playerEntity))
                     player[i].BestMove = GameCommand.DoNothing;   
                 if (WalkIntoExplosion(player[i].SecondMove, player[i].playerEntity))
@@ -33,10 +34,15 @@ namespace Reference.Strategies.MDP
                     
                 if (!mdp.areWeInRangeOfBomb(player[i].playerEntity))
                 {
+                    //If there is a better option, rather move to the better option
+                    if (!CheckIfWeAreNextToAPowerUp(player[i]))
+                    {
+                        CheckIfWeShouldPlantABomb(player[i], mdp);
+                    }                   
                     //Check if we can blow up the enemy
-                    //Check if we can plant a bomb
-                    if (CanWePlantABomb(mdp, player[i].playerEntity))
-                        player[i] = OverrideWithNewBestMove(player[i], GameCommand.PlaceBomb);
+                    if (CanWeBlowAnEnemy(player[i].playerEntity, mdp))
+                        player[i] = OverrideWithNewBestMove(player[i], GameCommand.TriggerBomb);
+
                     if (CanWeBlowABomb(player[i].BestMove, player[i].playerEntity))
                         player[i] = OverrideWithNewBestMove(player[i], GameCommand.TriggerBomb);
                     if (CanWeBlowABomb(player[i].SecondMove, player[i].playerEntity))
@@ -47,12 +53,97 @@ namespace Reference.Strategies.MDP
             }
         }
 
+        private bool CheckIfWeAreNextToAPowerUp(MdpTools.PlayersAndMoves player)
+        {
+            if (player.BestMove == GameCommand.MoveDown &&
+                player.playerEntity.Location.Y < _gameMap.MapHeight)
+            {
+                var block = _gameMap.GetBlockAtLocation(player.playerEntity.Location.X,
+                    player.playerEntity.Location.Y + 1);
+                if (block.PowerUp != null)
+                    return true;
+            }
+            if (player.BestMove == GameCommand.MoveUp &&
+                player.playerEntity.Location.Y > 1)
+            {
+                var block = _gameMap.GetBlockAtLocation(player.playerEntity.Location.X,
+                    player.playerEntity.Location.Y - 1);
+                if (block.PowerUp != null)
+                    return true;
+            }
+            if (player.BestMove == GameCommand.MoveRight &&
+                player.playerEntity.Location.X < _gameMap.MapWidth)
+            {
+                var block = _gameMap.GetBlockAtLocation(player.playerEntity.Location.X + 1,
+                    player.playerEntity.Location.Y);
+                if (block.PowerUp != null)
+                    return true;
+            }
+            if (player.BestMove == GameCommand.MoveLeft &&
+                player.playerEntity.Location.X > 1)
+            {
+                var block = _gameMap.GetBlockAtLocation(player.playerEntity.Location.X - 1,
+                    player.playerEntity.Location.Y);
+                if (block.PowerUp != null)
+                    return true;
+            }
+            return false;
+        }
+
+        private void CheckIfWeShouldPlantABomb(MdpTools.PlayersAndMoves player, MdpTools mdp)
+        {
+            var bestMoveBombs = 0;
+            if (player.BestMove == GameCommand.MoveDown &&
+                player.playerEntity.Location.Y < _gameMap.MapHeight)
+            {
+                bestMoveBombs = WallsBombWillBlast(mdp, player.playerEntity.BombBag, player.playerEntity.BombRadius,
+                    player.playerEntity.Location.X, player.playerEntity.Location.Y + 1, player.playerEntity.Key);
+            }
+            if (player.BestMove == GameCommand.MoveUp &&
+                player.playerEntity.Location.Y > 1)
+            {
+                bestMoveBombs = WallsBombWillBlast(mdp, player.playerEntity.BombBag, player.playerEntity.BombRadius,
+                    player.playerEntity.Location.X, player.playerEntity.Location.Y - 1, player.playerEntity.Key);
+            }
+            if (player.BestMove == GameCommand.MoveRight &&
+                player.playerEntity.Location.X < _gameMap.MapWidth)
+            {
+                bestMoveBombs = WallsBombWillBlast(mdp, player.playerEntity.BombBag, player.playerEntity.BombRadius,
+                    player.playerEntity.Location.X, player.playerEntity.Location.X + 1, player.playerEntity.Key);
+            }
+            if (player.BestMove == GameCommand.MoveLeft &&
+                player.playerEntity.Location.X > 1)
+            {
+                bestMoveBombs = WallsBombWillBlast(mdp, player.playerEntity.BombBag, player.playerEntity.BombRadius,
+                    player.playerEntity.Location.X, player.playerEntity.Location.X - 1, player.playerEntity.Key);
+            }
+
+            var wallsBombWillBlast = WallsBombWillBlast(mdp, player.playerEntity.BombBag, player.playerEntity.BombRadius,
+                player.playerEntity.Location.X, player.playerEntity.Location.Y, player.playerEntity.Key);
+            if ( (wallsBombWillBlast >= bestMoveBombs) &&
+                 (wallsBombWillBlast > 0) )
+            {
+                player = OverrideWithNewBestMove(player, GameCommand.PlaceBomb);
+            }
+        }
+
         public void EliminateDuplicateMoves(ref List<MdpTools.PlayersAndMoves> playerMoves)
         {
             foreach (var player in playerMoves)
             {
                 if (player.SecondMove == player.BestMove)
-                    player.SecondMove = GameCommand.ImDed;
+                {
+                    if (player.ThirdMove != player.BestMove)
+                    {
+                        player.SecondMove = player.ThirdMove;
+                        player.ThirdMove = GameCommand.DoNothing;
+                    }
+                    else
+                    {
+                        player.SecondMove = GameCommand.ImDed;
+                    }
+                }
+
                 if (player.ThirdMove == player.SecondMove)
                     player.ThirdMove = GameCommand.ImDed;
                 if (player.ThirdMove == player.BestMove)
@@ -108,6 +199,8 @@ namespace Reference.Strategies.MDP
                     return false;
                 case GameCommand.DoNothing:
                     return false;
+                case GameCommand.ImDed:
+                    return false;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(bestMdpMove), bestMdpMove, null);
             }
@@ -135,58 +228,127 @@ namespace Reference.Strategies.MDP
             return false;
         }
 
-        private bool CanWePlantABomb(MdpTools mdp, PlayerEntity player)
+        private bool CanWeBlowAnEnemy(PlayerEntity player, MdpTools mdp)
         {
-            if (player.BombBag == 0)
-                return false;
-
-            var bombBlockedXMinusDirection = false;
-            var bombBlockedXPlusDirection = false;
-            var bombBlockedYMinusDirection = false;
-            var bombBlockedYPlusDirection = false;
-            for (int range = 1; range <= player.BombRadius; range++)
+            for (var y = 1; y <= _gameMap.MapHeight; y++)
             {
-                if ((player.Location.X - range > 1) && (!bombBlockedXMinusDirection))
+                for (var x = 1; x <= _gameMap.MapWidth; x++)
                 {
-                    var xrange = player.Location.X - range;
-                    var yrange = player.Location.Y;
-                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedXMinusDirection, mdp))
+                    var block = _gameMap.GetBlockAtLocation(x, y);
+                    if (block.Bomb?.Owner.Key == player.Key)
                     {
-                        return true;
-                    }
-                }
-                if ((player.Location.X + range < _gameMap.MapWidth) && (!bombBlockedXPlusDirection))
-                {
-                    var xrange = player.Location.X + range;
-                    var yrange = player.Location.Y;
-                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedXPlusDirection, mdp))
-                    {
-                        return true;
-                    }
-                }
-                if ((player.Location.Y - range > 1) && (!bombBlockedYMinusDirection))
-                {
-                    var xrange = player.Location.X;
-                    var yrange = player.Location.Y - range;
-                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedYMinusDirection, mdp))
-                    {
-                        return true;
-                    }
-                }
-                if ((player.Location.Y + range < _gameMap.MapHeight) && (!bombBlockedYPlusDirection))
-                {
-                    var xrange = player.Location.X;
-                    var yrange = player.Location.Y + range;
-                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedYPlusDirection, mdp))
-                    {
-                        return true;
+                        if (block.Bomb.IsExploding || block.Bomb.BombTimer == 1)
+                            continue;
+                        if (EnemiesBombWillBlast(mdp, block.Bomb.BombRadius, block.Location.X, block.Location.Y, player.Key) > 0)
+                            return true;
                     }
                 }
             }
             return false;
         }
 
-        private bool PlantBombUnlessBombBlocked(int xrange, int yrange, ref bool bombBlockedDirection, MdpTools mdp)
+        private int WallsBombWillBlast(MdpTools mdp, int bombBag, int bombRadius, int x, int y, char key)
+        {
+            if (bombBag == 0)
+                return 0;
+
+            var wallsInRange = 0;
+            var bombBlockedXMinusDirection = false;
+            var bombBlockedXPlusDirection = false;
+            var bombBlockedYMinusDirection = false;
+            var bombBlockedYPlusDirection = false;
+            for (int range = 1; range <= bombRadius; range++)
+            {
+                if ((x - range > 1) && (!bombBlockedXMinusDirection))
+                {
+                    var xrange = x - range;
+                    var yrange = y;
+                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedXMinusDirection, mdp, key))
+                    {
+                        wallsInRange++;
+                    }
+                }
+                if ((x + range < _gameMap.MapWidth) && (!bombBlockedXPlusDirection))
+                {
+                    var xrange = x + range;
+                    var yrange = y;
+                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedXPlusDirection, mdp, key))
+                    {
+                        wallsInRange++;
+                    }
+                }
+                if ((y - range > 1) && (!bombBlockedYMinusDirection))
+                {
+                    var xrange = x;
+                    var yrange = y - range;
+                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedYMinusDirection, mdp, key))
+                    {
+                        wallsInRange++;
+                    }
+                }
+                if ((y + range < _gameMap.MapHeight) && (!bombBlockedYPlusDirection))
+                {
+                    var xrange = x;
+                    var yrange = y + range;
+                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedYPlusDirection, mdp, key))
+                    {
+                        wallsInRange++;
+                    }
+                }
+            }
+            return wallsInRange;
+        }
+
+        private int EnemiesBombWillBlast(MdpTools mdp, int bombRadius, int x, int y, char key)
+        {
+            var enemiesInRange = 0;
+            var bombBlockedXMinusDirection = false;
+            var bombBlockedXPlusDirection = false;
+            var bombBlockedYMinusDirection = false;
+            var bombBlockedYPlusDirection = false;
+            for (int range = 1; range <= bombRadius; range++)
+            {
+                if ((x - range > 1) && (!bombBlockedXMinusDirection))
+                {
+                    var xrange = x - range;
+                    var yrange = y;
+                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedXMinusDirection, mdp, key))
+                    {
+                        enemiesInRange++;
+                    }
+                }
+                if ((x + range < _gameMap.MapWidth) && (!bombBlockedXPlusDirection))
+                {
+                    var xrange = x + range;
+                    var yrange = y;
+                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedXPlusDirection, mdp, key))
+                    {
+                        enemiesInRange++;
+                    }
+                }
+                if ((y - range > 1) && (!bombBlockedYMinusDirection))
+                {
+                    var xrange = x;
+                    var yrange = y - range;
+                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedYMinusDirection, mdp, key))
+                    {
+                        enemiesInRange++;
+                    }
+                }
+                if ((y + range < _gameMap.MapHeight) && (!bombBlockedYPlusDirection))
+                {
+                    var xrange = x;
+                    var yrange = y + range;
+                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedYPlusDirection, mdp, key))
+                    {
+                        enemiesInRange++;
+                    }
+                }
+            }
+            return enemiesInRange;
+        }
+
+        private bool PlantBombUnlessBombBlocked(int xrange, int yrange, ref bool bombBlockedDirection, MdpTools mdp, char key)
         {
             GameBlock blockInRange;
             MdpTools.MdpBlock mdpBlockInRange;
@@ -200,8 +362,20 @@ namespace Reference.Strategies.MDP
             }
             else
             {
-                if ((blockInRange.Entity is DestructibleWallEntity) && (!mdpBlockInRange.InRangeOfMyBomb) && (!mdpBlockInRange.InRangeOfEnemyBomb))
+                bool inRangeOfEnemy = false;
+                if (blockInRange.Entity is PlayerEntity)
+                {
+                    if ((blockInRange.Entity as PlayerEntity).Key != key)
+                        return true;
+                }
+                if ( blockInRange.Entity is DestructibleWallEntity &&
+                    (!mdpBlockInRange.InRangeOfMyBomb) &&
+                    (!mdpBlockInRange.InRangeOfEnemyBomb)) //TODO Maak seker
+                {
+                    bombBlockedDirection = true;
                     return true;
+                }
+                    
             }
             return false;
         }

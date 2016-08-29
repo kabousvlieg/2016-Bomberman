@@ -381,5 +381,33 @@ namespace Reference.Strategies.MDP
                 player.Killed = true;
             return bombBlockedDirection;
         }
+
+        public bool EndGame()
+        {
+            var wallsLeft = 0;
+            for (var y = 1; y <= _gameMap.MapHeight; y++)
+            {
+                for (var x = 1; x <= _gameMap.MapWidth; x++)
+                {
+                    var block = _gameMap.GetBlockAtLocation(x, y);
+                    if (block.Entity is DestructibleWallEntity)
+                        wallsLeft++;
+                }
+            }
+            return wallsLeft == 0;
+        }
+
+        public static bool FightOrNotFlight(PlayerEntity[] players)
+        {
+            if (players[1]?.Points > players[0].Points)
+                return true;
+            if (players[2]?.Points > players[0].Points)
+                return true;
+            if (players[3]?.Points > players[0].Points)
+                return true;
+            if ((players[1] == null) && (players[2] == null) && (players[3] == null))
+                return true;
+            return false;
+        }
     }
 }

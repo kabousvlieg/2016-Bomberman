@@ -48,19 +48,25 @@ namespace Reference.Strategies.MDP
                     Utils utils;
                     utils = new Utils(round[currentRound].Map, playerKey);
                     PlayerEntity[] players = new PlayerEntity[4]; //Maximum of 4 players
+                    players[0] = null;
+                    players[1] = null;
+                    players[2] = null;
+                    players[3] = null;
                     utils.getPlayers(ref players);
                     var mdp = new MdpTools(round[currentRound].Map, playerKey, players);
                     var ruleEngine = new RuleEngine(round[currentRound].Map, players);
 
-                    //utils.DrawMap();
+                    utils.DrawMap();
                     while (!mdp.AssignBombValues())
                     {
                     } //while not done
-                    mdp.AssignMdpGoals();
+                    var endGame = utils.EndGame();
+                    mdp.AssignMdpGoals(endGame, playerKey);
                     mdp.CalculateMdp();
-                    //mdp.DrawMdpMap();
-                    var playerMoves = mdp.CalculateBestMoveFromMdp();
-                    ruleEngine.OverrideMdpMoveWithRuleEngine(ref playerMoves, mdp);
+                    mdp.DrawMdpMap();
+                    var playerMoves = mdp.CalculateBestMoveFromMdp(endGame, Utils.FightOrNotFlight(players));
+                    ruleEngine.EliminateDuplicateMoves(ref playerMoves);
+                    ruleEngine.OverrideMdpMoveWithRuleEngine(ref playerMoves, mdp, endGame);
                     ruleEngine.EliminateDuplicateMoves(ref playerMoves);
                     //TODO Eliminate same moves
                     round[currentRound].PlayersMoves = playerMoves;             

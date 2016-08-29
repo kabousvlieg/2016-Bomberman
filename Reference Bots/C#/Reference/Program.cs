@@ -26,8 +26,8 @@ namespace Reference
                 if (args == null || args.Length == 0)
                 {
                     playerKey = 'A';
-                    outputLocation = Path.Combine(@"C:\Kobus\Werk\2016-Bomberman-master\Game Engine\Bomberman\bin\Debug\Replays\458149325\0\", playerKey.ToString());
-                    var jsonFileLocation = @"C:\Kobus\Werk\2016-Bomberman-master\Game Engine\Bomberman\bin\Debug\Replays\458149325\0\state.json";
+                    outputLocation = Path.Combine(@"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Bomberman\bin\Debug\Replays\376062097\52\", playerKey.ToString());
+                    var jsonFileLocation = @"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Bomberman\bin\Debug\Replays\376062097\52\state.json";
                     if ( File.Exists(jsonFileLocation))
                     {
                         inputMap = File.ReadAllText(jsonFileLocation);
@@ -48,10 +48,10 @@ namespace Reference
                 var map = GameMap.FromJson(inputMap);
                 GameCommand command;
                 //if (playerKey == 'A')
-                {
+                //{
                     var gameStrategy = new MdpStrategy();
                     command = gameStrategy.ExecuteStrategy(map, playerKey);
-                }
+                //}
                 //else
                 //{
                 //    var gameStrategy = new AStarStrategy();

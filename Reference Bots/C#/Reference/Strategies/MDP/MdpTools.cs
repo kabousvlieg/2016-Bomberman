@@ -12,13 +12,15 @@ namespace Reference.Strategies.MDP
     {
         private readonly int WallValue = 10;
         private readonly int PowerUpValue = 100;
-        private readonly int SuperPowerUpValue = 200;
+        private readonly int SuperPowerUpValue = 500;
         private readonly int PenaltyValue = 30;
         private readonly int EnemyBombPenalty = 90;
         //private readonly int BombValue = -100;
         private readonly int PathWhenBombValue = 5000;
         private readonly int PathWhenMyBombValue = 500;
         private readonly int PathWhenEnemyBombValue = 50;
+
+        private readonly int EndGameOtherPlayerValue = 200;
 
 
         public enum MdpTypes
@@ -250,7 +252,7 @@ namespace Reference.Strategies.MDP
         #endregion
 
         #region mdpgoalfunction
-        public void AssignMdpGoals()
+        public void AssignMdpGoals(bool endGame, char playerKey)
         {
             //TODO If no more walls and powerups, assign goals to corners based on player key
             //TODO or implement an already explored map writing it to disk
@@ -265,14 +267,14 @@ namespace Reference.Strategies.MDP
                     _mdpMap[x, y].ItemOnBlockValue = Int32.MinValue;
                     if ((_mdpMap[_players[0].playerEntity.Location.X, _players[0].playerEntity.Location.Y].InRangeOfMyBomb) ||
                         (_mdpMap[_players[0].playerEntity.Location.X, _players[0].playerEntity.Location.Y].InRangeOfEnemyBomb))
-                        AssignBlockEntityValues(_mdpMap, block, x, y, true);
+                        AssignBlockEntityValues(_mdpMap, block, x, y, true, endGame, playerKey);
                     else
-                        AssignBlockEntityValues(_mdpMap, block, x, y, false);
+                        AssignBlockEntityValues(_mdpMap, block, x, y, false, endGame, playerKey);
                 }
             }
         }
 
-        private void AssignBlockEntityValues(MdpBlock[,] MdpMap, GameBlock block, int x, int y, bool escape)
+        private void AssignBlockEntityValues(MdpBlock[,] MdpMap, GameBlock block, int x, int y, bool escape, bool endGame, char playerKey)
         {
             if ((block.Entity == null) &&
                 (block.PowerUp == null))
@@ -286,6 +288,10 @@ namespace Reference.Strategies.MDP
                     if (escape)
                     {
                         MdpMap[x, y].Type = MdpTypes.Indestructable;
+                        MdpMap[x, y].ItemOnBlockValue = WallValue;
+                        MdpMap[x, y].Value = WallValue;
+                        MdpMap[x, y].ValidItemOnBlockValue = true;
+                        MdpMap[x, y].ValidValue = true;
                         return;
                     }
                     else
@@ -341,6 +347,15 @@ namespace Reference.Strategies.MDP
                     MdpMap[x, y].Type = MdpTypes.Path;
                     MdpMap[x, y].ItemOnBlockValue = PowerUpValue;
                     MdpMap[x, y].ValidItemOnBlockValue = true;
+                }
+                else if (block.Entity is PlayerEntity)
+                {
+                    if ((endGame) && (block.Entity as PlayerEntity).Key != playerKey)
+                    {
+                        MdpMap[x, y].Type = MdpTypes.Path;
+                        MdpMap[x, y].ItemOnBlockValue = EndGameOtherPlayerValue;
+                        MdpMap[x, y].ValidItemOnBlockValue = true;
+                    }
                 }
             }
             if (block.PowerUp != null)
@@ -423,7 +438,7 @@ namespace Reference.Strategies.MDP
             }
         }
 
-        public List<PlayersAndMoves> CalculateBestMoveFromMdp()
+        public List<PlayersAndMoves> CalculateBestMoveFromMdp(bool endGame, bool fightOrNotFlight)
         {
             //TODO 
             //1 - We can still get stuck here...
@@ -434,8 +449,7 @@ namespace Reference.Strategies.MDP
                     new ValuesAndMoves(int.MinValue, GameCommand.MoveLeft),
                     new ValuesAndMoves(int.MinValue, GameCommand.MoveRight),
                     new ValuesAndMoves(int.MinValue, GameCommand.MoveUp),
-                    new ValuesAndMoves(int.MinValue, GameCommand.MoveDown),
-                    new ValuesAndMoves(int.MinValue, GameCommand.DoNothing)
+                    new ValuesAndMoves(int.MinValue, GameCommand.MoveDown)
                 };
                 if (player.playerEntity.Location.X > 1)
                 {
@@ -461,19 +475,102 @@ namespace Reference.Strategies.MDP
                     var yoffset = player.playerEntity.Location.Y + 1;
                     largestMdpValues[3] = new ValuesAndMoves(isBestMoveThisWay(xoffset, yoffset, player.playerEntity), GameCommand.MoveDown);
                 }
-                largestMdpValues[4] = new ValuesAndMoves(isBestMoveThisWay(player.playerEntity.Location.X, player.playerEntity.Location.Y, player.playerEntity), GameCommand.DoNothing);
-                player.BestMove = GetLargestAndRemove(largestMdpValues);
-                player.SecondMove = GetLargestAndRemove(largestMdpValues);
-                player.ThirdMove = GetLargestAndRemove(largestMdpValues);
+                removeInvalidMoves(largestMdpValues, player.playerEntity.Location.X, player.playerEntity.Location.Y);
+                if (!endGame)
+                {
+                    player.BestMove = GetLargestAndRemove(largestMdpValues);
+                    player.SecondMove = GetLargestAndRemove(largestMdpValues);
+                    player.ThirdMove = GetLargestAndRemove(largestMdpValues);
+                }
+                else 
+                {
+                    if (fightOrNotFlight) //Go toward enemy player
+                    {
+                        player.BestMove = GetLargestAndRemove(largestMdpValues);
+                        player.SecondMove = GetLargestAndRemove(largestMdpValues);
+                        player.ThirdMove = GetLargestAndRemove(largestMdpValues);
+                    }
+                    else //Run away from enemy player
+                    {
+                        player.BestMove = GetSmallestAndRemove(largestMdpValues);
+                        player.SecondMove = GetSmallestAndRemove(largestMdpValues);
+                        player.ThirdMove = GetSmallestAndRemove(largestMdpValues);
+                    }
+                }
             }
             return _players;
         }
 
+        private void removeInvalidMoves(List<ValuesAndMoves> largestMdpValues, int x, int y)
+        {
+            for (int i = largestMdpValues.Count - 1; i >= 0; i--)
+            {
+                if (largestMdpValues[i].Move == GameCommand.MoveDown)
+                {
+                    if (y >= _gameMap.MapHeight)
+                    {
+                        largestMdpValues.RemoveAt(i);
+                        continue;
+                    }
+                    var block = _gameMap.GetBlockAtLocation(x, y + 1);
+                    if (block.Entity != null)
+                    {
+                        largestMdpValues.RemoveAt(i);
+                        continue;
+                    }
+
+                }
+                if (largestMdpValues[i].Move == GameCommand.MoveUp)
+                {
+                    if (y <= 1)
+                    {
+                        largestMdpValues.RemoveAt(i);
+                        continue;
+                    }
+                    var block = _gameMap.GetBlockAtLocation(x, y - 1);
+                    if (block.Entity != null)
+                    {
+                        largestMdpValues.RemoveAt(i);
+                        continue;
+                    }
+                }
+                if (largestMdpValues[i].Move == GameCommand.MoveLeft)
+                {
+                    if (x <= 1)
+                    {
+                        largestMdpValues.RemoveAt(i);
+                        continue;
+                    }
+                    var block = _gameMap.GetBlockAtLocation(x - 1, y);
+                    if (block.Entity != null)
+                    {
+                        largestMdpValues.RemoveAt(i);
+                        continue;
+                    }
+                }
+                if (largestMdpValues[i].Move == GameCommand.MoveRight)
+                {
+                    if (x >= _gameMap.MapWidth)
+                    {
+                        largestMdpValues.RemoveAt(i);
+                        continue;
+                    }
+                    var block = _gameMap.GetBlockAtLocation(x + 1, y);
+                    if (block.Entity != null)
+                    {
+                        largestMdpValues.RemoveAt(i);
+                        continue;
+                    }
+                }
+            }
+        }
+
         private static GameCommand GetLargestAndRemove(List<ValuesAndMoves> largestMdpValues)
         {
-            PlayersAndMoves player;
             var largest = int.MinValue;
             var pos = 0;
+            if (largestMdpValues.Count == 0)
+                return GameCommand.DoNothing;
             for (int i = largestMdpValues.Count - 1; i >= 0; i--)
             {
                 if (largestMdpValues[i].Value > largest)
@@ -485,6 +582,27 @@ namespace Reference.Strategies.MDP
             var move = largestMdpValues[pos].Move;
             largestMdpValues.RemoveAt(pos);
             if (largest == int.MinValue)
+                move = GameCommand.DoNothing;
+            return move;
+        }
+
+        private static GameCommand GetSmallestAndRemove(List<ValuesAndMoves> largestMdpValues)
+        {
+            var smallest = int.MaxValue;
+            var pos = 0;
+            if (largestMdpValues.Count == 0)
+                return GameCommand.DoNothing;
+            for (int i = largestMdpValues.Count - 1; i >= 0; i--)
+            {
+                if (largestMdpValues[i].Value < smallest)
+                {
+                    smallest = largestMdpValues[i].Value;
+                    pos = i;
+                }
+            }
+            var move = largestMdpValues[pos].Move;
+            largestMdpValues.RemoveAt(pos);
+            if (smallest == int.MaxValue)
                 move = GameCommand.DoNothing;
             return move;
         }
@@ -518,15 +636,10 @@ namespace Reference.Strategies.MDP
         #region CalculateMdp
         public void CalculateMdp()
         {
-            //TODO notes:
-            //1 - What about squares with multiple destructible walls, should be worth more?
-
-            var stillNotDone = false;
-            do
+            var done = false;
+            for (int i = 0; i < 10; i++) //Only parse a maximum of ten times through the map
             {
-                int largestDifferenceThisRun = 0;
-                int largestDifferencePreviousRun = 0;
-                stillNotDone = false;
+                done = false;
                 for (var y = 1; y <= _gameMap.MapHeight; y++)
                 {
                     for (var x = 1; x <= _gameMap.MapWidth; x++)
@@ -538,27 +651,22 @@ namespace Reference.Strategies.MDP
                         bool largestNeigbourValid;
                         var largestNeighbour = GetLargestNeighbour(x, y, out largestNeigbourValid);
                         int largestDifference = 0;
-                        stillNotDone = LargestNeighbourValid(largestNeigbourValid, x, y, largestNeighbour, stillNotDone, ref largestDifference);
-                        if (largestDifference > largestDifferenceThisRun)
-                            largestDifferenceThisRun = largestDifference;
-                        //If difference is still too big, mark stillNotDone
+                        done = LargestNeighbourValid(largestNeigbourValid, x, y, largestNeighbour, done, ref largestDifference);
+                        
+                        //If difference is still too big, mark done
                         //TODO limit the amount of iterations we will go through
                     }
                 }
-                //Debug.Print(largestDifferenceThisRun.ToString() + "\n");
                 //DrawMdpMap();
-                if (largestDifferenceThisRun == 0)
+                if (done)
                     break;
-                if (largestDifferencePreviousRun == largestDifferenceThisRun)
-                    break;
-                largestDifferencePreviousRun = largestDifferenceThisRun;
-            } while (stillNotDone);
+            }
         }
 
-        private bool LargestNeighbourValid(bool largestNeigbourValid, int x, int y, int largestNeighbour, bool stillNotDone, ref int largestDifference)
+        private bool LargestNeighbourValid(bool largestNeigbourValid, int x, int y, int largestNeighbour, bool done, ref int largestDifference)
         {
             int calculatedValue;
-            largestDifference = 0;
+            largestDifference = int.MinValue;
             //Calculate our value
             if (largestNeigbourValid)
             {
@@ -588,7 +696,7 @@ namespace Reference.Strategies.MDP
                             calculatedValue = largestNeighbour - penalty;
                         }
                         if (Math.Abs(calculatedValue - _mdpMap[x, y].Value) > 10)
-                            stillNotDone = true;
+                            done = false;
                         if (Math.Abs(calculatedValue - _mdpMap[x, y].Value) > largestDifference)
                             largestDifference = Math.Abs(calculatedValue - _mdpMap[x, y].Value);
                         _mdpMap[x, y].Value = calculatedValue;
@@ -614,7 +722,7 @@ namespace Reference.Strategies.MDP
                         calculatedValue = largestNeighbour - penalty;
                     }
                     if (Math.Abs(calculatedValue - _mdpMap[x, y].Value) > 10)
-                        stillNotDone = true;
+                        done = false;
                     if (Math.Abs(calculatedValue - _mdpMap[x, y].Value) > largestDifference)
                         largestDifference = Math.Abs(calculatedValue - _mdpMap[x, y].Value);
                     _mdpMap[x, y].Value = calculatedValue;
@@ -628,54 +736,76 @@ namespace Reference.Strategies.MDP
             }
             else
             {
-                stillNotDone = true;
+                done = false;
             }
-            return stillNotDone;
+            return done;
         }
 
         private int GetLargestNeighbour(int x, int y, out bool largestNeigbourValid)
         {
             var largestNeighbour = int.MinValue;
+            var neighboursContribute = 0;
             largestNeigbourValid = false;
             if (x > 1)
             {
                 var xoffset = x - 1;
                 var yoffset = y;
-                largestNeighbour = CheckLargestNeighbour(xoffset, yoffset, largestNeighbour, ref largestNeigbourValid);
+                if (_mdpMap[xoffset, yoffset].ValidValue)
+                {
+                    if (_mdpMap[xoffset, yoffset].Value > largestNeighbour)
+                    {
+                        largestNeighbour = _mdpMap[xoffset, yoffset].Value;
+                        largestNeigbourValid = true;
+                        neighboursContribute += _mdpMap[xoffset, yoffset].Value/100;
+                    }
+                }
             }
             if (x < _gameMap.MapWidth)
             {
                 var xoffset = x + 1;
                 var yoffset = y;
-                largestNeighbour = CheckLargestNeighbour(xoffset, yoffset, largestNeighbour, ref largestNeigbourValid);
+                if (_mdpMap[xoffset, yoffset].ValidValue)
+                {
+                    if (_mdpMap[xoffset, yoffset].Value > largestNeighbour)
+                    {
+                        largestNeighbour = _mdpMap[xoffset, yoffset].Value;
+                        largestNeigbourValid = true;
+                        neighboursContribute += _mdpMap[xoffset, yoffset].Value / 100;
+                    }
+                }
             }
             if (y > 1)
             {
                 var xoffset = x;
                 var yoffset = y - 1;
-                largestNeighbour = CheckLargestNeighbour(xoffset, yoffset, largestNeighbour, ref largestNeigbourValid);
+                if (_mdpMap[xoffset, yoffset].ValidValue)
+                {
+                    if (_mdpMap[xoffset, yoffset].Value > largestNeighbour)
+                    {
+                        largestNeighbour = _mdpMap[xoffset, yoffset].Value;
+                        largestNeigbourValid = true;
+                        neighboursContribute += _mdpMap[xoffset, yoffset].Value / 100;
+                    }
+                }
             }
             if (y < _gameMap.MapHeight)
             {
                 var xoffset = x;
                 var yoffset = y + 1;
-                largestNeighbour = CheckLargestNeighbour(xoffset, yoffset, largestNeighbour, ref largestNeigbourValid);
-            }
-            return largestNeighbour;
-        }
-
-        private int CheckLargestNeighbour(int xoffset, int yoffset, int largestNeighbour, ref bool largestNeigbourValid)
-        {
-            if (_mdpMap[xoffset, yoffset].ValidValue)
-            {
-                if (_mdpMap[xoffset, yoffset].Value > largestNeighbour)
+                if (_mdpMap[xoffset, yoffset].ValidValue)
                 {
-                    largestNeighbour = _mdpMap[xoffset, yoffset].Value;
-                    largestNeigbourValid = true;
+                    if (_mdpMap[xoffset, yoffset].Value > largestNeighbour)
+                    {
+                        largestNeighbour = _mdpMap[xoffset, yoffset].Value;
+                        largestNeigbourValid = true;
+                        neighboursContribute += _mdpMap[xoffset, yoffset].Value / 100;
+                    }
                 }
             }
-            return largestNeighbour;
+            return largestNeighbour;// + neighboursContribute;
         }
+
+
         #endregion
 
         public void DrawMdpMap(bool printSign = false)

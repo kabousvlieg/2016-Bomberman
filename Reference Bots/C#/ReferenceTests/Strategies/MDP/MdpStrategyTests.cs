@@ -186,10 +186,10 @@ namespace Reference.Strategies.MDP.Tests
                 "#####################".ToCharArray(),
                 "#A  v               #".ToCharArray(),
                 "# ###               #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "# #                 #".ToCharArray(),
+                "# #                 #".ToCharArray(),
                 "#z#                 #".ToCharArray(),
-                "# #                 #".ToCharArray(),
-                "# #                 #".ToCharArray(),
-                "# #                 #".ToCharArray(),
                 "#                   #".ToCharArray(),
                 "#                   #".ToCharArray(),
                 "#                   #".ToCharArray(),
@@ -205,7 +205,7 @@ namespace Reference.Strategies.MDP.Tests
                 "#                   #".ToCharArray(),
                 "#####################".ToCharArray()
             };
-            var map = TestUtils.TestMap(charMap, 4);
+            var map = TestUtils.TestMap(charMap, 8);
             var gameStrategy = new MdpStrategy();
             var command = gameStrategy.ExecuteStrategy(map, 'A');
             Assert.IsTrue(command == Commands.GameCommand.MoveDown);
@@ -529,7 +529,7 @@ namespace Reference.Strategies.MDP.Tests
                 "# # # #+#+#+#+# # # #".ToCharArray(),
                 "#    + ++   +  & +  #".ToCharArray(),
                 "# # #+# #+#+# # # # #".ToCharArray(),
-                "#C    ++  +b        #".ToCharArray(),
+                "#C    ++  +B        #".ToCharArray(),
                 "#!# # # #+#+# # # # #".ToCharArray(),
                 "#     +++   ++      #".ToCharArray(),
                 "# # #+#+# # #+# # # #".ToCharArray(),
@@ -576,6 +576,39 @@ namespace Reference.Strategies.MDP.Tests
         }
 
         [TestMethod()]
+        public void BlowEnemyPlayer()
+        {
+            var charMap = new char[][]
+            {
+                "#####################".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#   A               #".ToCharArray(),
+                "#   +               #".ToCharArray(),
+                "#                 ! #".ToCharArray(),
+                "#                  x#".ToCharArray(),
+                "#                 # #".ToCharArray(),
+                "#                 # #".ToCharArray(),
+                "#                 # #".ToCharArray(),
+                "#                 #B#".ToCharArray(),
+                "#####################".ToCharArray()
+            };
+            var map = TestUtils.TestMap(charMap, 8);
+            var gameStrategy = new MdpStrategy();
+            var command = gameStrategy.ExecuteStrategy(map, 'A');
+            Assert.IsTrue(command == Commands.GameCommand.TriggerBomb);
+        }
+
+        [TestMethod()]
         public void Harikiri()
         {
             var charMap = new char[][]
@@ -595,7 +628,7 @@ namespace Reference.Strategies.MDP.Tests
                 "#                   #".ToCharArray(),
                 "#                   #".ToCharArray(),
                 "#                 ! #".ToCharArray(),
-                "#                 Az#".ToCharArray(),
+                "#                 Ax#".ToCharArray(),
                 "#                 # #".ToCharArray(),
                 "#                 # #".ToCharArray(),
                 "#                 # #".ToCharArray(),
@@ -938,70 +971,235 @@ namespace Reference.Strategies.MDP.Tests
             Assert.IsTrue(command == Commands.GameCommand.MoveUp);
         }
 
-        //[TestMethod()]
-        //public void BlowThreeNotTwo()
-        //{
-        //    var charMap = new char[][]
-        //    {
-        //        "#####################".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                 ! #".ToCharArray(),
-        //        "#                 Az#".ToCharArray(),
-        //        "#                 # #".ToCharArray(),
-        //        "#                 # #".ToCharArray(),
-        //        "#                 # #".ToCharArray(),
-        //        "#                 #B#".ToCharArray(),
-        //        "#####################".ToCharArray()
-        //    };
-        //    var map = TestUtils.TestMap(charMap, 8);
-        //    var gameStrategy = new MdpStrategy();
-        //    var command = gameStrategy.ExecuteStrategy(map, 'A');
-        //    Assert.IsTrue(command == Commands.GameCommand.TriggerBomb);
-        //}
+        [TestMethod()]
+        public void BlowThreeNotTwo()
+        {
+            var charMap = new char[][]
+            {
+                "#####################".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#       +           #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#      +      +     #".ToCharArray(),
+                "#       A +         #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#####################".ToCharArray()
+            };
+            var map = TestUtils.TestMap(charMap, 8);
+            var gameStrategy = new MdpStrategy();
+            var command = gameStrategy.ExecuteStrategy(map, 'A');
+            Assert.IsTrue(command == Commands.GameCommand.MoveUp);
+        }
 
-        //[TestMethod()]
-        //public void DontBlowRatherPickup()
-        //{
-        //    var charMap = new char[][]
-        //    {
-        //        "#####################".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                   #".ToCharArray(),
-        //        "#                 ! #".ToCharArray(),
-        //        "#                 Az#".ToCharArray(),
-        //        "#                 # #".ToCharArray(),
-        //        "#                 # #".ToCharArray(),
-        //        "#                 # #".ToCharArray(),
-        //        "#                 #B#".ToCharArray(),
-        //        "#####################".ToCharArray()
-        //    };
-        //    var map = TestUtils.TestMap(charMap, 8);
-        //    var gameStrategy = new MdpStrategy();
-        //    var command = gameStrategy.ExecuteStrategy(map, 'A');
-        //    Assert.IsTrue(command == Commands.GameCommand.TriggerBomb);
-        //}
+        [TestMethod()]
+        public void DontBlowRatherPickup()
+        {
+            var charMap = new char[][]
+            {
+                "#####################".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#       +           #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#       A!          #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#####################".ToCharArray()
+            };
+            var map = TestUtils.TestMap(charMap, 8);
+            var gameStrategy = new MdpStrategy();
+            var command = gameStrategy.ExecuteStrategy(map, 'A');
+            Assert.IsTrue(command == Commands.GameCommand.MoveRight);
+        }
+
+        [TestMethod()]
+        public void Gotcha9_Huh()
+        {
+            var charMap = new char[][]
+            {
+                "#####################".ToCharArray(),
+                "#A  + + ++ ++ +   + #".ToCharArray(),
+                "# # # # # # # # # #+#".ToCharArray(),
+                "#  +  +  +++  +  +  #".ToCharArray(),
+                "#+# # # # # # # # # #".ToCharArray(),
+                "# +++++       +++++ #".ToCharArray(),
+                "# # # #+# # #+# # # #".ToCharArray(),
+                "#++  + + +++ + +  ++#".ToCharArray(),
+                "# #+# # #+#+# # #+# #".ToCharArray(),
+                "# +   + +++++ +   + #".ToCharArray(),
+                "# #+# # #+$+# # #+# #".ToCharArray(),
+                "# +   + +++++ +   + #".ToCharArray(),
+                "# #+# # #+#+# # #+# #".ToCharArray(),
+                "#++  + + +++ + +  ++#".ToCharArray(),
+                "# # # #+# # #+# # # #".ToCharArray(),
+                "# +++++       +++++ #".ToCharArray(),
+                "# # # # # # # # # #+#".ToCharArray(),
+                "#  +  +  +++  +  +  #".ToCharArray(),
+                "#+# # # # # # # # # #".ToCharArray(),
+                "# +   + ++ ++ + +  B#".ToCharArray(),
+                "#####################".ToCharArray()
+            };
+            var map = TestUtils.TestMap(charMap, 1);
+            var gameStrategy = new MdpStrategy();
+            var command = gameStrategy.ExecuteStrategy(map, 'A');
+            Assert.IsTrue(command == Commands.GameCommand.MoveDown);
+        }
+
+        [TestMethod()]
+        public void EscapeBombInTheRightDirection()
+        {
+            var charMap = new char[][]
+            {
+                "#####################".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#      +++          #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#      #a#          #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#####################".ToCharArray()
+            };
+            var map = TestUtils.TestMap(charMap, 8);
+            var gameStrategy = new MdpStrategy();
+            var command = gameStrategy.ExecuteStrategy(map, 'A');
+            Assert.IsTrue(command == Commands.GameCommand.MoveUp);
+        }
+
+        [TestMethod()]
+        public void Gotcha10_WhyDoNothingHere()
+        {
+            var charMap = new char[][]
+            {
+                "#####################".ToCharArray(),
+                "#              +   +#".ToCharArray(),
+                "# # # #A# # # # # # #".ToCharArray(),
+                "#             +   + #".ToCharArray(),
+                "# # # # # # # # #+# #".ToCharArray(),
+                "#            +  + + #".ToCharArray(),
+                "# # # # # # # # #+# #".ToCharArray(),
+                "#    & + + + + +   +#".ToCharArray(),
+                "# # #+# #+#+# #+# # #".ToCharArray(),
+                "#    +++++++++++    #".ToCharArray(),
+                "# # # # #+$+# # # # #".ToCharArray(),
+                "#    +++++++++++    #".ToCharArray(),
+                "# # #+# # #+# #+# # #".ToCharArray(),
+                "#+   +             +#".ToCharArray(),
+                "# #+#3# # # # # #+# #".ToCharArray(),
+                "# + +B          + + #".ToCharArray(),
+                "# #+# # # # # # # #+#".ToCharArray(),
+                "# +   +             #".ToCharArray(),
+                "# # # # # # # # # # #".ToCharArray(),
+                "#+   +         ++   #".ToCharArray(),
+                "#####################".ToCharArray()
+            };
+            var map = TestUtils.TestMap(charMap, 8, 0);
+            var gameStrategy = new MdpStrategy();
+            var command = gameStrategy.ExecuteStrategy(map, 'A');
+            Assert.IsTrue(command != Commands.GameCommand.DoNothing);
+        }
+
+        [TestMethod()]
+        public void Flight()
+        {
+            var charMap = new char[][]
+            {
+                "#####################".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#          B        #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#      #A#          #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#####################".ToCharArray()
+            };
+            var map = TestUtils.TestMap(charMap, 8, 1, 20, 10);
+            var gameStrategy = new MdpStrategy();
+            var command = gameStrategy.ExecuteStrategy(map, 'A');
+            Assert.IsTrue(command == Commands.GameCommand.MoveDown);
+        }
+
+        [TestMethod()]
+        public void Fight()
+        {
+            var charMap = new char[][]
+            {
+                "#####################".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#          B        #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#      #A#          #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#                   #".ToCharArray(),
+                "#####################".ToCharArray()
+            };
+            var map = TestUtils.TestMap(charMap, 8, 1, 10, 20);
+            var gameStrategy = new MdpStrategy();
+            var command = gameStrategy.ExecuteStrategy(map, 'A');
+            Assert.IsTrue(command == Commands.GameCommand.MoveUp);
+        }
     }
 }

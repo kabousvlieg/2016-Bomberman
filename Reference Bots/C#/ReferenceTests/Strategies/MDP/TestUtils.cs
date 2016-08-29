@@ -8,7 +8,7 @@ namespace Reference.Strategies.MDP.Tests
 {
     public class TestUtils
     {
-        public static GameMap TestMap(char[][] map, int bombRange)
+        public static GameMap TestMap(char[][] map, int bombRange, int bombBag = 2, int myScore = 0, int theirScore = 20) 
         {
             Assert.IsTrue(map.Length == 21);
             for (var y = 0; y < map.Length; y++)
@@ -55,7 +55,7 @@ namespace Reference.Strategies.MDP.Tests
                         case 'B':
                         case 'C':
                         case 'D':
-                            assignPlayer(map, gm, x, y, bombRange);
+                            assignPlayer(map, gm, x, y, bombRange, bombBag, myScore, theirScore);
                             break;
                         case '0':
                             assignBombExplode(gm, x, y, bombRange);
@@ -218,8 +218,13 @@ namespace Reference.Strategies.MDP.Tests
             };
         }
 
-        private static void assignPlayer(char[][] map, GameMap gm, int x, int y, int bombRange)
+        private static void assignPlayer(char[][] map, GameMap gm, int x, int y, int bombRange, int bombBag, int myScore = 0, int theirScore = 0)
         {
+            var score = 0;
+            if (char.ToUpper(map[y][x]) == 'A')
+                score = myScore;
+            else
+                score = theirScore;
             gm.GameBlocks[x, y] = new GameBlock()
             {
                 Entity = new PlayerEntity()
@@ -229,12 +234,12 @@ namespace Reference.Strategies.MDP.Tests
                         X = x+1,
                         Y = y+1
                     },
-                    BombBag = 1,
+                    BombBag = bombBag,
                     BombRadius = bombRange,
                     Key = char.ToUpper(map[y][x]),
                     Killed = false,
                     Name = "Player",
-                    Points = 1
+                    Points = score
                 },
                 Location = new Location()
                 {
