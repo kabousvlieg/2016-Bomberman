@@ -214,11 +214,13 @@ namespace Reference.Strategies.MDP
             if (blockInRange.Entity != null)
             {
                 if ((blockInRange.Entity is DestructibleWallEntity) ||
-                    (blockInRange.Entity is IndestructibleWallEntity) ||
-                    (blockInRange.Entity is DestructibleWallEntity) /* ||
-                                    (blockInRange.Entity is PlayerEntity)*/)
+                    (blockInRange.Entity is IndestructibleWallEntity) )
                 {
                     bombBlockedDirection = true;
+                    if (myBomb)
+                        _mdpMap[xrange, yrange].InRangeOfMyBomb = true;
+                    else
+                        _mdpMap[xrange, yrange].InRangeOfEnemyBomb = true;
                 }
                 else
                 {
@@ -252,7 +254,7 @@ namespace Reference.Strategies.MDP
         #endregion
 
         #region mdpgoalfunction
-        public void AssignMdpGoals(bool endGame, char playerKey)
+        public void AssignMdpGoals(bool endGame, char playerKey, bool escape)
         {
             //TODO If no more walls and powerups, assign goals to corners based on player key
             //TODO or implement an already explored map writing it to disk
@@ -265,11 +267,7 @@ namespace Reference.Strategies.MDP
                     _mdpMap[x, y].Value = Int32.MinValue;
                     _mdpMap[x, y].ValidItemOnBlockValue = false;
                     _mdpMap[x, y].ItemOnBlockValue = Int32.MinValue;
-                    if ((_mdpMap[_players[0].playerEntity.Location.X, _players[0].playerEntity.Location.Y].InRangeOfMyBomb) ||
-                        (_mdpMap[_players[0].playerEntity.Location.X, _players[0].playerEntity.Location.Y].InRangeOfEnemyBomb))
-                        AssignBlockEntityValues(_mdpMap, block, x, y, true, endGame, playerKey);
-                    else
-                        AssignBlockEntityValues(_mdpMap, block, x, y, false, endGame, playerKey);
+                    AssignBlockEntityValues(_mdpMap, block, x, y, escape, endGame, playerKey);
                 }
             }
         }
@@ -288,19 +286,25 @@ namespace Reference.Strategies.MDP
                     if (escape)
                     {
                         MdpMap[x, y].Type = MdpTypes.Indestructable;
-                        MdpMap[x, y].ItemOnBlockValue = WallValue;
-                        MdpMap[x, y].Value = WallValue;
-                        MdpMap[x, y].ValidItemOnBlockValue = true;
-                        MdpMap[x, y].ValidValue = true;
+                        if (!MdpMap[x, y].InRangeOfMyBomb)
+                        {
+                            MdpMap[x, y].ItemOnBlockValue = WallValue;
+                            MdpMap[x, y].Value = WallValue + PathWhenBombValue;
+                            MdpMap[x, y].ValidItemOnBlockValue = true;
+                            MdpMap[x, y].ValidValue = true;
+                        }
                         return;
                     }
                     else
                     {
                         MdpMap[x, y].Type = MdpTypes.Destructable;
-                        MdpMap[x, y].ItemOnBlockValue = WallValue;
-                        MdpMap[x, y].Value = WallValue;
-                        MdpMap[x, y].ValidItemOnBlockValue = true;
-                        MdpMap[x, y].ValidValue = true;
+                        if (!MdpMap[x, y].InRangeOfMyBomb)
+                        {
+                            MdpMap[x, y].ItemOnBlockValue = WallValue;
+                            MdpMap[x, y].Value = WallValue;
+                            MdpMap[x, y].ValidItemOnBlockValue = true;
+                            MdpMap[x, y].ValidValue = true;
+                        }
                     }                   
                 }
                 else if (block.Entity is IndestructibleWallEntity)

@@ -17,7 +17,7 @@ namespace Reference.Strategies.MDP
             _gameMap = gameMap;
         }
 
-        public void OverrideMdpMoveWithRuleEngine(ref List<MdpTools.PlayersAndMoves> player, MdpTools mdp, bool endGame)
+        public bool OverrideMdpMoveWithRuleEngine(ref List<MdpTools.PlayersAndMoves> player, MdpTools mdp, bool endGame)
         {
             for (int i = 0; i < player.Count; i++)
             {
@@ -35,12 +35,16 @@ namespace Reference.Strategies.MDP
                 if (!mdp.areWeInRangeOfBomb(player[i].playerEntity))
                 {
                     //If there is a better option, rather move to the better option
+                    //TODO At some point powerups doesn't matter any more...Early game more important late game less so.
                     if (!CheckIfWeAreNextToAPowerUp(player[i]))
                     {
                         CheckIfWeShouldPlantABomb(player[i], mdp);
                     }                   
                     //Check if we can blow up the enemy
                     if (CanWeBlowAnEnemy(player[i].playerEntity, mdp))
+                        player[i] = OverrideWithNewBestMove(player[i], GameCommand.TriggerBomb);
+                    //Check if we can blow up the enemy
+                    if (CanWeStealAWall(player[i].playerEntity, mdp))
                         player[i] = OverrideWithNewBestMove(player[i], GameCommand.TriggerBomb);
 
                     if (CanWeBlowABomb(player[i].BestMove, player[i].playerEntity))
@@ -51,6 +55,17 @@ namespace Reference.Strategies.MDP
                         player[i] = OverrideWithNewThirdMove(player[i], GameCommand.TriggerBomb);
                 }
             }
+        
+            return Harikiri(player[0], mdp);
+        }
+
+        private bool Harikiri(MdpTools.PlayersAndMoves playersAndMoves, MdpTools mdp)
+        {
+            //I have only one bomb
+            //I have more points than other players
+            //All players are in the path of the bomb
+            //All possible moves of enemy players keep them in the path of the bomb
+            return false;   //cannot work...
         }
 
         private bool CheckIfWeAreNextToAPowerUp(MdpTools.PlayersAndMoves player)
@@ -109,15 +124,15 @@ namespace Reference.Strategies.MDP
                 player.playerEntity.Location.X < _gameMap.MapWidth)
             {
                 bestMoveBombs = WallsBombWillBlast(mdp, player.playerEntity.BombBag, player.playerEntity.BombRadius,
-                    player.playerEntity.Location.X, player.playerEntity.Location.X + 1, player.playerEntity.Key);
+                    player.playerEntity.Location.X + 1, player.playerEntity.Location.Y, player.playerEntity.Key);
             }
             if (player.BestMove == GameCommand.MoveLeft &&
                 player.playerEntity.Location.X > 1)
             {
                 bestMoveBombs = WallsBombWillBlast(mdp, player.playerEntity.BombBag, player.playerEntity.BombRadius,
-                    player.playerEntity.Location.X, player.playerEntity.Location.X - 1, player.playerEntity.Key);
+                    player.playerEntity.Location.X - 1, player.playerEntity.Location.Y, player.playerEntity.Key);
             }
-
+            //Bomb planted here
             var wallsBombWillBlast = WallsBombWillBlast(mdp, player.playerEntity.BombBag, player.playerEntity.BombRadius,
                 player.playerEntity.Location.X, player.playerEntity.Location.Y, player.playerEntity.Key);
             if ( (wallsBombWillBlast >= bestMoveBombs) &&
@@ -217,10 +232,11 @@ namespace Reference.Strategies.MDP
                     var block = _gameMap.GetBlockAtLocation(x, y);
                     if (block.Bomb?.Owner.Key == player.Key)
                     {
-                        if (block.Bomb.IsExploding || block.Bomb.BombTimer == 1)
+                        if (block.Bomb.IsExploding || block.Bomb.BombTimer <= 3)
                             continue;
                         //TODO review this decision
-                        if (mdpMove == GameCommand.DoNothing || player.BombBag == 0)
+                        if ((mdpMove == GameCommand.DoNothing) || 
+                            ( (player.BombBag == 0) && (mdpMove == GameCommand.PlaceBomb)) )
                             return true;
                     }
                 }
@@ -237,7 +253,7 @@ namespace Reference.Strategies.MDP
                     var block = _gameMap.GetBlockAtLocation(x, y);
                     if (block.Bomb?.Owner.Key == player.Key)
                     {
-                        if (block.Bomb.IsExploding || block.Bomb.BombTimer == 1)
+                        if (block.Bomb.IsExploding || block.Bomb.BombTimer <= 2) //It will explode in any case
                             continue;
                         if (EnemiesBombWillBlast(mdp, block.Bomb.BombRadius, block.Location.X, block.Location.Y, player.Key) > 0)
                             return true;
@@ -247,11 +263,27 @@ namespace Reference.Strategies.MDP
             return false;
         }
 
+        private bool CanWeStealAWall(PlayerEntity player, MdpTools mdp)
+        {
+            for (var y = 1; y <= _gameMap.MapHeight; y++)
+            {
+                for (var x = 1; x <= _gameMap.MapWidth; x++)
+                {
+                    var block = _gameMap.GetBlockAtLocation(x, y);
+                    if (block.Bomb?.Owner.Key == player.Key)
+                    {
+                        if (block.Bomb.IsExploding || block.Bomb.BombTimer <= 2) //It will explode in any case
+                            continue;
+                        if (EnemyBombWillBlast(mdp, block.Bomb.BombRadius, block.Location.X, block.Location.Y, player.Key) > 0)
+                            return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         private int WallsBombWillBlast(MdpTools mdp, int bombBag, int bombRadius, int x, int y, char key)
         {
-            if (bombBag == 0)
-                return 0;
-
             var wallsInRange = 0;
             var bombBlockedXMinusDirection = false;
             var bombBlockedXPlusDirection = false;
@@ -299,6 +331,55 @@ namespace Reference.Strategies.MDP
             return wallsInRange;
         }
 
+        private int EnemyBombWillBlast(MdpTools mdp, int bombRadius, int x, int y, char key)
+        {
+            var wallsInRange = 0;
+            var bombBlockedXMinusDirection = false;
+            var bombBlockedXPlusDirection = false;
+            var bombBlockedYMinusDirection = false;
+            var bombBlockedYPlusDirection = false;
+            for (int range = 1; range <= bombRadius; range++)
+            {
+                if ((x - range > 1) && (!bombBlockedXMinusDirection))
+                {
+                    var xrange = x - range;
+                    var yrange = y;
+                    if (BlowBombForEnemyWallUnlessBombBlocked(xrange, yrange, ref bombBlockedXMinusDirection, mdp, key))
+                    {
+                        wallsInRange++;
+                    }
+                }
+                if ((x + range < _gameMap.MapWidth) && (!bombBlockedXPlusDirection))
+                {
+                    var xrange = x + range;
+                    var yrange = y;
+                    if (BlowBombForEnemyWallUnlessBombBlocked(xrange, yrange, ref bombBlockedXPlusDirection, mdp, key))
+                    {
+                        wallsInRange++;
+                    }
+                }
+                if ((y - range > 1) && (!bombBlockedYMinusDirection))
+                {
+                    var xrange = x;
+                    var yrange = y - range;
+                    if (BlowBombForEnemyWallUnlessBombBlocked(xrange, yrange, ref bombBlockedYMinusDirection, mdp, key))
+                    {
+                        wallsInRange++;
+                    }
+                }
+                if ((y + range < _gameMap.MapHeight) && (!bombBlockedYPlusDirection))
+                {
+                    var xrange = x;
+                    var yrange = y + range;
+                    if (BlowBombForEnemyWallUnlessBombBlocked(xrange, yrange, ref bombBlockedYPlusDirection, mdp, key))
+                    {
+                        wallsInRange++;
+                    }
+                }
+            }
+            return wallsInRange;
+        }
+
         private int EnemiesBombWillBlast(MdpTools mdp, int bombRadius, int x, int y, char key)
         {
             var enemiesInRange = 0;
@@ -312,7 +393,7 @@ namespace Reference.Strategies.MDP
                 {
                     var xrange = x - range;
                     var yrange = y;
-                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedXMinusDirection, mdp, key))
+                    if (ExplodeBombUnlessBombBlocked(xrange, yrange, ref bombBlockedXMinusDirection, mdp, key))
                     {
                         enemiesInRange++;
                     }
@@ -321,7 +402,7 @@ namespace Reference.Strategies.MDP
                 {
                     var xrange = x + range;
                     var yrange = y;
-                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedXPlusDirection, mdp, key))
+                    if (ExplodeBombUnlessBombBlocked(xrange, yrange, ref bombBlockedXPlusDirection, mdp, key))
                     {
                         enemiesInRange++;
                     }
@@ -330,7 +411,7 @@ namespace Reference.Strategies.MDP
                 {
                     var xrange = x;
                     var yrange = y - range;
-                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedYMinusDirection, mdp, key))
+                    if (ExplodeBombUnlessBombBlocked(xrange, yrange, ref bombBlockedYMinusDirection, mdp, key))
                     {
                         enemiesInRange++;
                     }
@@ -339,7 +420,7 @@ namespace Reference.Strategies.MDP
                 {
                     var xrange = x;
                     var yrange = y + range;
-                    if (PlantBombUnlessBombBlocked(xrange, yrange, ref bombBlockedYPlusDirection, mdp, key))
+                    if (ExplodeBombUnlessBombBlocked(xrange, yrange, ref bombBlockedYPlusDirection, mdp, key))
                     {
                         enemiesInRange++;
                     }
@@ -369,13 +450,75 @@ namespace Reference.Strategies.MDP
                         return true;
                 }
                 if ( blockInRange.Entity is DestructibleWallEntity &&
-                    (!mdpBlockInRange.InRangeOfMyBomb) &&
-                    (!mdpBlockInRange.InRangeOfEnemyBomb)) //TODO Maak seker
+                    (!mdpBlockInRange.InRangeOfMyBomb))/* &&
+                    (!mdpBlockInRange.InRangeOfEnemyBomb))*/ //TODO Maak seker
                 {
                     bombBlockedDirection = true;
                     return true;
                 }
                     
+            }
+            return false;
+        }
+
+        private bool BlowBombForEnemyWallUnlessBombBlocked(int xrange, int yrange, ref bool bombBlockedDirection, MdpTools mdp, char key)
+        {
+            GameBlock blockInRange;
+            MdpTools.MdpBlock mdpBlockInRange;
+            blockInRange = _gameMap.GetBlockAtLocation(xrange, yrange);
+            mdpBlockInRange = mdp._mdpMap[xrange, yrange];
+            if (blockInRange.Entity == null) return false;
+            if (blockInRange.Entity is IndestructibleWallEntity)
+            {
+                bombBlockedDirection = true;
+                return false;
+            }
+            else
+            {
+                bool inRangeOfEnemy = false;
+                if (blockInRange.Entity is PlayerEntity)
+                {
+                    if ((blockInRange.Entity as PlayerEntity).Key != key)
+                        return true;
+                }
+                if (blockInRange.Entity is DestructibleWallEntity &&
+                    (mdpBlockInRange.InRangeOfEnemyBomb)) 
+                {
+                    bombBlockedDirection = true;
+                    return true;
+                }
+
+            }
+            return false;
+        }
+
+        private bool ExplodeBombUnlessBombBlocked(int xrange, int yrange, ref bool bombBlockedDirection, MdpTools mdp, char key)
+        {
+            GameBlock blockInRange;
+            MdpTools.MdpBlock mdpBlockInRange;
+            blockInRange = _gameMap.GetBlockAtLocation(xrange, yrange);
+            mdpBlockInRange = mdp._mdpMap[xrange, yrange];
+            if (blockInRange.Entity == null) return false;
+            if (blockInRange.Entity is IndestructibleWallEntity)
+            {
+                bombBlockedDirection = true;
+                return false;
+            }
+            else
+            {
+                bool inRangeOfEnemy = false;
+                if (blockInRange.Entity is PlayerEntity)
+                {
+                    if ((blockInRange.Entity as PlayerEntity).Key != key)
+                        return true;
+                }
+                //if (blockInRange.Entity is DestructibleWallEntity &&
+                //    (!mdpBlockInRange.InRangeOfMyBomb) &&
+                //    (!mdpBlockInRange.InRangeOfEnemyBomb)) //TODO Maak seker
+                //{
+                //    bombBlockedDirection = true;
+                //    return true;
+                //}
             }
             return false;
         }

@@ -27,9 +27,7 @@ namespace Reference.Strategies.MDP
 
         public GameCommand ExecuteStrategy(GameMap gameMap, char playerKey)
         {
-#if (DEBUG)
             var stopwatch = Stopwatch.StartNew();
-#endif
             const int rounds = 10;
             int currentRound = 0;
             var round = new GameRound[rounds];
@@ -38,11 +36,13 @@ namespace Reference.Strategies.MDP
             round[0] = new GameRound(gameMap.Clone() as GameMap, null);
             while (currentRound < rounds)
             {
-                //if ((stopwatch.ElapsedMilliseconds > 2000))
-                //{
-                //    round[0].PlayersMoves[0] = MoveDedMovesDown(round[0].PlayersMoves[0]);
-                //    break;
-                //s}
+                if ((stopwatch.ElapsedMilliseconds > 2000))
+                {
+                    round[0].PlayersMoves[0] = MoveDedMovesDown(round[0].PlayersMoves[0]);
+                    if (round[0].PlayersMoves[0].SecondMove != GameCommand.ImDed)
+                        round[0].PlayersMoves[0].BestMove = round[0].PlayersMoves[0].SecondMove;
+                    break;
+                }
                 if (round[currentRound].PlayersMoves == null)
                 {
                     Utils utils;
@@ -61,13 +61,70 @@ namespace Reference.Strategies.MDP
                     {
                     } //while not done
                     var endGame = utils.EndGame();
-                    mdp.AssignMdpGoals(endGame, playerKey);
+                    var inRangeOfBomb = mdp.areWeInRangeOfBomb(players[0]);
+                    mdp.AssignMdpGoals(endGame, playerKey, false);
                     mdp.CalculateMdp();
-                    mdp.DrawMdpMap();
+                    //mdp.DrawMdpMap();
                     var playerMoves = mdp.CalculateBestMoveFromMdp(endGame, Utils.FightOrNotFlight(players));
+                    if (inRangeOfBomb)
+                    {
+                        var nonBombMdp = new MdpTools(round[currentRound].Map, playerKey, players);
+                        var nonBombruleEngine = new RuleEngine(round[currentRound].Map, players);
+
+                        //utils.DrawMap();
+                        while (!nonBombMdp.AssignBombValues())
+                        {
+                        } //while not done
+                        var nonBombEndGame = utils.EndGame();
+                        nonBombMdp.AssignMdpGoals(nonBombEndGame, playerKey, inRangeOfBomb);
+                        nonBombMdp.CalculateMdp();
+                        //nonBombMdp.DrawMdpMap();
+                        var nonBombplayerMoves = nonBombMdp.CalculateBestMoveFromMdp(nonBombEndGame, Utils.FightOrNotFlight(players));
+                        //TODO needs work
+                        if ( (playerMoves[0].BestMove != GameCommand.DoNothing) && 
+                            ((playerMoves[0].BestMove == nonBombplayerMoves[0].BestMove) ||
+                             (playerMoves[0].BestMove == nonBombplayerMoves[0].SecondMove) ||
+                             (playerMoves[0].BestMove == nonBombplayerMoves[0].ThirdMove)) )
+                        {
+                            //Do nothing
+                        }
+                        else
+                        {
+                            if ((playerMoves[0].SecondMove != GameCommand.DoNothing) &&
+                                ( (playerMoves[0].SecondMove == nonBombplayerMoves[0].BestMove) ||
+                                  (playerMoves[0].SecondMove == nonBombplayerMoves[0].SecondMove) ||
+                                  (playerMoves[0].SecondMove == nonBombplayerMoves[0].ThirdMove)))
+                            {
+                                playerMoves[0].BestMove = playerMoves[0].SecondMove;
+                            }
+                            else
+                            {
+                                if ((playerMoves[0].BestMove != GameCommand.DoNothing) &&
+                                    ((playerMoves[0].SecondMove == nonBombplayerMoves[0].BestMove) ||
+                                    (playerMoves[0].SecondMove == nonBombplayerMoves[0].SecondMove) ||
+                                    (playerMoves[0].SecondMove == nonBombplayerMoves[0].ThirdMove)) )
+                                {
+                                    playerMoves[0].BestMove = playerMoves[0].ThirdMove;
+                                }
+                                else
+                                {
+                                    playerMoves[0].BestMove = nonBombplayerMoves[0].BestMove;
+                                    playerMoves[0].SecondMove = nonBombplayerMoves[0].SecondMove;
+                                    playerMoves[0].ThirdMove = nonBombplayerMoves[0].ThirdMove;
+                                }
+                            }
+                        }
+                    }
                     ruleEngine.EliminateDuplicateMoves(ref playerMoves);
-                    ruleEngine.OverrideMdpMoveWithRuleEngine(ref playerMoves, mdp, endGame);
+                    var harikiri = ruleEngine.OverrideMdpMoveWithRuleEngine(ref playerMoves, mdp, endGame);
+                    if (harikiri)
+                        return GameCommand.TriggerBomb;
                     ruleEngine.EliminateDuplicateMoves(ref playerMoves);
+                    if ((playerMoves[0].BestMove == GameCommand.PlaceBomb) &&
+                        (playerMoves[0].playerEntity.BombBag == 0)) //Bomb will explode soon
+                    {
+                        playerMoves[0].BestMove = GameCommand.DoNothing; //So wait it out
+                    }
                     //TODO Eliminate same moves
                     round[currentRound].PlayersMoves = playerMoves;             
                 }
@@ -118,7 +175,7 @@ namespace Reference.Strategies.MDP
             }
 
             if (round[0].PlayersMoves[0].BestMove == GameCommand.ImDed)
-                round[0].PlayersMoves[0].BestMove = GameCommand.TriggerBomb; //TODO last ditch effort, place bomb or trigger
+                round[0].PlayersMoves[0].BestMove = GameCommand.PlaceBomb; //TODO last ditch effort, place bomb or trigger
 #if (DEBUG)
             //if ((stopwatch.ElapsedMilliseconds > 2000))
             //    Assert.Fail("Code overran time of 2 seconds");
