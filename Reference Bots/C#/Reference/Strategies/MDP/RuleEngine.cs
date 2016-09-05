@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Reference.Commands;
 using Reference.Domain.Map;
 using Reference.Domain.Map.Entities;
+using Reference.Domain.Map.Entities.PowerUps;
 
 namespace Reference.Strategies.MDP
 {
@@ -21,9 +22,13 @@ namespace Reference.Strategies.MDP
         {
             for (int i = 0; i < player.Count; i++)
             {
+                //TODO Endgame plant bombs as much as possible
+                //TODO Endgame if we are ahead in points stay away from walls, death zones
+
                 //Check for survival
                 //Will our mdpMove move into explosion
                 //TODO Review if we shouldn't then rather take the second or third best move???
+                //TODO Review we should also look at bomb countdown <= 2
                 if (WalkIntoExplosion(player[i].BestMove, player[i].playerEntity))
                     player[i].BestMove = GameCommand.DoNothing;   
                 if (WalkIntoExplosion(player[i].SecondMove, player[i].playerEntity))
@@ -38,7 +43,7 @@ namespace Reference.Strategies.MDP
                     //TODO At some point powerups doesn't matter any more...Early game more important late game less so.
                     if (!CheckIfWeAreNextToAPowerUp(player[i]))
                     {
-                        CheckIfWeShouldPlantABomb(player[i], mdp);
+                        CheckIfWeShouldPlantABomb(player[i], mdp, endGame);
                     }                   
                     //Check if we can blow up the enemy
                     if (CanWeBlowAnEnemy(player[i].playerEntity, mdp))
@@ -76,7 +81,7 @@ namespace Reference.Strategies.MDP
                 var block = _gameMap.GetBlockAtLocation(player.playerEntity.Location.X,
                     player.playerEntity.Location.Y + 1);
                 if (block.PowerUp != null)
-                    return true;
+                    if (OnlyPickupIfWeReallyNeedIt(player.playerEntity, block)) return true;
             }
             if (player.BestMove == GameCommand.MoveUp &&
                 player.playerEntity.Location.Y > 1)
@@ -84,7 +89,7 @@ namespace Reference.Strategies.MDP
                 var block = _gameMap.GetBlockAtLocation(player.playerEntity.Location.X,
                     player.playerEntity.Location.Y - 1);
                 if (block.PowerUp != null)
-                    return true;
+                    if (OnlyPickupIfWeReallyNeedIt(player.playerEntity, block)) return true;
             }
             if (player.BestMove == GameCommand.MoveRight &&
                 player.playerEntity.Location.X < _gameMap.MapWidth)
@@ -92,7 +97,7 @@ namespace Reference.Strategies.MDP
                 var block = _gameMap.GetBlockAtLocation(player.playerEntity.Location.X + 1,
                     player.playerEntity.Location.Y);
                 if (block.PowerUp != null)
-                    return true;
+                    if (OnlyPickupIfWeReallyNeedIt(player.playerEntity, block)) return true;
             }
             if (player.BestMove == GameCommand.MoveLeft &&
                 player.playerEntity.Location.X > 1)
@@ -100,12 +105,33 @@ namespace Reference.Strategies.MDP
                 var block = _gameMap.GetBlockAtLocation(player.playerEntity.Location.X - 1,
                     player.playerEntity.Location.Y);
                 if (block.PowerUp != null)
-                    return true;
+                    if (OnlyPickupIfWeReallyNeedIt(player.playerEntity, block)) return true;
             }
             return false;
         }
 
-        private void CheckIfWeShouldPlantABomb(MdpTools.PlayersAndMoves player, MdpTools mdp)
+        public static bool OnlyPickupIfWeReallyNeedIt(PlayerEntity player, GameBlock block)
+        {
+            if ((block.PowerUp is BombBagPowerUpEntity) &&
+                (player.BombBag < 3))
+            {
+                return true;
+            }
+            if ((block.PowerUp is BombRaduisPowerUpEntity) &&
+                (player.BombRadius < 16))
+            {
+                return true;
+            }
+            if ((block.PowerUp is SuperPowerUp) &&
+                (player.BombBag < 3) &&
+                (player.BombRadius < 16))
+            {
+                
+            }
+            return false;
+        }
+
+        private void CheckIfWeShouldPlantABomb(MdpTools.PlayersAndMoves player, MdpTools mdp, bool endGame)
         {
             var bestMoveBombs = 0;
             if (player.BestMove == GameCommand.MoveDown &&
@@ -135,8 +161,15 @@ namespace Reference.Strategies.MDP
             //Bomb planted here
             var wallsBombWillBlast = WallsBombWillBlast(mdp, player.playerEntity.BombBag, player.playerEntity.BombRadius,
                 player.playerEntity.Location.X, player.playerEntity.Location.Y, player.playerEntity.Key);
-            if ( (wallsBombWillBlast >= bestMoveBombs) &&
-                 (wallsBombWillBlast > 0) )
+            if (wallsBombWillBlast > 0)
+            {
+                player = OverrideWithNewSecondMove(player, GameCommand.PlaceBomb);
+                if (wallsBombWillBlast >= bestMoveBombs)
+                {
+                    player = OverrideWithNewBestMove(player, GameCommand.PlaceBomb);
+                }                 
+            }
+            if (endGame)
             {
                 player = OverrideWithNewBestMove(player, GameCommand.PlaceBomb);
             }
@@ -232,7 +265,7 @@ namespace Reference.Strategies.MDP
                     var block = _gameMap.GetBlockAtLocation(x, y);
                     if (block.Bomb?.Owner.Key == player.Key)
                     {
-                        if (block.Bomb.IsExploding || block.Bomb.BombTimer <= 3)
+                        if (block.Bomb.IsExploding || block.Bomb.BombTimer < 3)
                             continue;
                         //TODO review this decision
                         if ((mdpMove == GameCommand.DoNothing) || 

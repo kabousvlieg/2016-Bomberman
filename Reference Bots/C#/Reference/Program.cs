@@ -25,9 +25,9 @@ namespace Reference
                 string inputMap;
                 if (args == null || args.Length == 0)
                 {
-                    playerKey = 'A';
-                    outputLocation = Path.Combine(@"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Bomberman\bin\Debug\Replays\1325634904\87\", playerKey.ToString());
-                    var jsonFileLocation = @"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Bomberman\bin\Debug\Replays\1325634904\87\state.json";
+                    playerKey = 'C';
+                    outputLocation = Path.Combine(@"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Bomberman\bin\Debug\Replays\812046530\178\", playerKey.ToString());
+                    var jsonFileLocation = @"C:\Kobus\Werk\Entelect\Game Engine v1.1.0\Game Engine\Bomberman\bin\Debug\Replays\812046530\179\state.json";
                     if ( File.Exists(jsonFileLocation))
                     {
                         inputMap = File.ReadAllText(jsonFileLocation);
@@ -57,7 +57,7 @@ namespace Reference
                 //    var gameStrategy = new AStarStrategy();
                 //    command = gameStrategy.ExecuteStrategy(map, playerKey);
                 //}
-               
+
 
                 Console.WriteLine("Sending Back command " + command);
                 File.WriteAllText(Path.Combine(outputLocation, "move.txt"), ((int)command).ToString());

@@ -43,6 +43,7 @@ namespace Reference.Strategies.MDP
             public GameCommand BestMove;
             public GameCommand SecondMove;
             public GameCommand ThirdMove;
+            //public GameCommand FourthMove;
 
             public PlayersAndMoves(PlayerEntity entity)
             {
@@ -254,7 +255,7 @@ namespace Reference.Strategies.MDP
         #endregion
 
         #region mdpgoalfunction
-        public void AssignMdpGoals(bool endGame, char playerKey, bool escape)
+        public void AssignMdpGoals(bool endGame, char playerKey, bool escape, PlayerEntity player)
         {
             //TODO If no more walls and powerups, assign goals to corners based on player key
             //TODO or implement an already explored map writing it to disk
@@ -267,12 +268,12 @@ namespace Reference.Strategies.MDP
                     _mdpMap[x, y].Value = Int32.MinValue;
                     _mdpMap[x, y].ValidItemOnBlockValue = false;
                     _mdpMap[x, y].ItemOnBlockValue = Int32.MinValue;
-                    AssignBlockEntityValues(_mdpMap, block, x, y, escape, endGame, playerKey);
+                    AssignBlockEntityValues(_mdpMap, block, x, y, escape, endGame, playerKey, player);
                 }
             }
         }
 
-        private void AssignBlockEntityValues(MdpBlock[,] MdpMap, GameBlock block, int x, int y, bool escape, bool endGame, char playerKey)
+        private void AssignBlockEntityValues(MdpBlock[,] MdpMap, GameBlock block, int x, int y, bool escape, bool endGame, char playerKey, PlayerEntity player)
         {
             if ((block.Entity == null) &&
                 (block.PowerUp == null))
@@ -354,7 +355,7 @@ namespace Reference.Strategies.MDP
                 }
                 else if (block.Entity is PlayerEntity)
                 {
-                    if ((endGame) && (block.Entity as PlayerEntity).Key != playerKey)
+                    if ((endGame) && (block.Entity as PlayerEntity).Key != playerKey) 
                     {
                         MdpMap[x, y].Type = MdpTypes.Path;
                         MdpMap[x, y].ItemOnBlockValue = EndGameOtherPlayerValue;
@@ -364,18 +365,25 @@ namespace Reference.Strategies.MDP
             }
             if (block.PowerUp != null)
             {
-                if ((block.PowerUp is BombBagPowerUpEntity) ||
-                    (block.PowerUp is BombRaduisPowerUpEntity))
+                if (RuleEngine.OnlyPickupIfWeReallyNeedIt(player, block))
                 {
-                    MdpMap[x, y].Type = MdpTypes.Path;
-                    MdpMap[x, y].ItemOnBlockValue = PowerUpValue;
-                    MdpMap[x, y].ValidItemOnBlockValue = true;
+                    if ((block.PowerUp is BombBagPowerUpEntity) ||
+                        (block.PowerUp is BombRaduisPowerUpEntity))
+                    {
+                        MdpMap[x, y].Type = MdpTypes.Path;
+                        MdpMap[x, y].ItemOnBlockValue = PowerUpValue;
+                        MdpMap[x, y].ValidItemOnBlockValue = true;
+                    }
+                    else if (block.PowerUp is SuperPowerUp)
+                    {
+                        MdpMap[x, y].Type = MdpTypes.Path;
+                        MdpMap[x, y].ItemOnBlockValue = SuperPowerUpValue;
+                        MdpMap[x, y].ValidItemOnBlockValue = true;
+                    }
                 }
-                else if (block.PowerUp is SuperPowerUp)
+                else
                 {
                     MdpMap[x, y].Type = MdpTypes.Path;
-                    MdpMap[x, y].ItemOnBlockValue = SuperPowerUpValue;
-                    MdpMap[x, y].ValidItemOnBlockValue = true;
                 }
             }
             if (block.Bomb != null)
@@ -480,27 +488,9 @@ namespace Reference.Strategies.MDP
                     largestMdpValues[3] = new ValuesAndMoves(isBestMoveThisWay(xoffset, yoffset, player.playerEntity), GameCommand.MoveDown);
                 }
                 removeInvalidMoves(largestMdpValues, player.playerEntity.Location.X, player.playerEntity.Location.Y);
-                if (!endGame)
-                {
-                    player.BestMove = GetLargestAndRemove(largestMdpValues);
-                    player.SecondMove = GetLargestAndRemove(largestMdpValues);
-                    player.ThirdMove = GetLargestAndRemove(largestMdpValues);
-                }
-                else 
-                {
-                    if (fightOrNotFlight) //Go toward enemy player
-                    {
-                        player.BestMove = GetLargestAndRemove(largestMdpValues);
-                        player.SecondMove = GetLargestAndRemove(largestMdpValues);
-                        player.ThirdMove = GetLargestAndRemove(largestMdpValues);
-                    }
-                    else //Run away from enemy player
-                    {
-                        player.BestMove = GetSmallestAndRemove(largestMdpValues);
-                        player.SecondMove = GetSmallestAndRemove(largestMdpValues);
-                        player.ThirdMove = GetSmallestAndRemove(largestMdpValues);
-                    }
-                }
+                player.BestMove = GetLargestAndRemove(largestMdpValues);
+                player.SecondMove = GetLargestAndRemove(largestMdpValues);
+                player.ThirdMove = GetLargestAndRemove(largestMdpValues);
             }
             return _players;
         }
@@ -598,7 +588,7 @@ namespace Reference.Strategies.MDP
                 return GameCommand.DoNothing;
             for (int i = largestMdpValues.Count - 1; i >= 0; i--)
             {
-                if (largestMdpValues[i].Value < smallest)
+                if ((largestMdpValues[i].Value < smallest) && (largestMdpValues[i].Value != int.MinValue))
                 {
                     smallest = largestMdpValues[i].Value;
                     pos = i;

@@ -34,14 +34,14 @@ namespace Reference.Strategies.MDP
             //List<MdpTools.PlayersAndMoves> playersMoves;
 
             round[0] = new GameRound(gameMap.Clone() as GameMap, null);
+            var bestMoveThoughDead = GameCommand.TriggerBomb;
+            var initialBestMove = true;
             while (currentRound < rounds)
             {
                 if ((stopwatch.ElapsedMilliseconds > 2000))
                 {
                     round[0].PlayersMoves[0] = MoveDedMovesDown(round[0].PlayersMoves[0]);
-                    if (round[0].PlayersMoves[0].SecondMove != GameCommand.ImDed)
-                        round[0].PlayersMoves[0].BestMove = round[0].PlayersMoves[0].SecondMove;
-                    break;
+                    return round[0].PlayersMoves[0].SecondMove;
                 }
                 if (round[currentRound].PlayersMoves == null)
                 {
@@ -56,13 +56,13 @@ namespace Reference.Strategies.MDP
                     var mdp = new MdpTools(round[currentRound].Map, playerKey, players);
                     var ruleEngine = new RuleEngine(round[currentRound].Map, players);
 
-                    utils.DrawMap();
+                    //utils.DrawMap();
                     while (!mdp.AssignBombValues())
                     {
                     } //while not done
                     var endGame = utils.EndGame();
                     var inRangeOfBomb = mdp.areWeInRangeOfBomb(players[0]);
-                    mdp.AssignMdpGoals(endGame, playerKey, false);
+                    mdp.AssignMdpGoals(endGame, playerKey, false, players[0]);
                     mdp.CalculateMdp();
                     //mdp.DrawMdpMap();
                     var playerMoves = mdp.CalculateBestMoveFromMdp(endGame, Utils.FightOrNotFlight(players));
@@ -76,7 +76,7 @@ namespace Reference.Strategies.MDP
                         {
                         } //while not done
                         var nonBombEndGame = utils.EndGame();
-                        nonBombMdp.AssignMdpGoals(nonBombEndGame, playerKey, inRangeOfBomb);
+                        nonBombMdp.AssignMdpGoals(nonBombEndGame, playerKey, inRangeOfBomb, players[0]);
                         nonBombMdp.CalculateMdp();
                         //nonBombMdp.DrawMdpMap();
                         var nonBombplayerMoves = nonBombMdp.CalculateBestMoveFromMdp(nonBombEndGame, Utils.FightOrNotFlight(players));
@@ -120,6 +120,11 @@ namespace Reference.Strategies.MDP
                     if (harikiri)
                         return GameCommand.TriggerBomb;
                     ruleEngine.EliminateDuplicateMoves(ref playerMoves);
+                    if ((currentRound == 0) && (initialBestMove))
+                    {
+                        if (playerMoves[0].BestMove != GameCommand.ImDed)
+                            bestMoveThoughDead = playerMoves[0].BestMove;
+                    }
                     if ((playerMoves[0].BestMove == GameCommand.PlaceBomb) &&
                         (playerMoves[0].playerEntity.BombBag == 0)) //Bomb will explode soon
                     {
@@ -147,7 +152,8 @@ namespace Reference.Strategies.MDP
                     else
                     {
                         //What the hell now? Game check mate?
-                        return GameCommand.TriggerBomb; //TODO last ditch effort, place bomb or trigger
+                        //Dis nie te se nie
+                        return bestMoveThoughDead; //TODO last ditch effort, place bomb or trigger
                     } 
                 }
                 
