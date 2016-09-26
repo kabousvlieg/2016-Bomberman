@@ -1,7 +1,13 @@
 {
+<<<<<<< HEAD
 	"Author":"Kobus Coetzee",
     "Email":"kobus@embeddedfool.net",
     "NickName" :"embeddedFool",
+=======
+	"Author":"John Doe",
+    "Email":"john.doe@example.com",
+    "NickName" :"John",
+>>>>>>> 109822ff23a14212bfc6b41a11aec0ed2b9fb453
     "BotType": 0,
     "ProjectLocation" : "",
     "RunFile" : "Reference\\bin\\Debug\\Reference.exe"
